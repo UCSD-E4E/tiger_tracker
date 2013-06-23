@@ -6,6 +6,7 @@
 
 #include <sys/statvfs.h>
 #include "CamTrap_Viper/CvService.h"
+#include "CamTrap_Viper/LogPacket.h"
 #include "motor_controller.h"
 #include <boost/asio.hpp>
 
@@ -30,7 +31,7 @@ int main(int argc, char** argv){
 	ros::Subscriber com_sub = n.subscribe("Com_Commands", 10, comCallback);
 	
 	//Open connection for Log node to connect to
-	ros::Publisher pub = n.advertise<std_msgs::String>("Motor_Movement",10);
+	ros::Publisher pub = n.advertise<CamTrap_Viper::LogPacket>("Motor_Movement",10);
 	
 	//Connect to CV service
 	ros::ServiceClient client = n.serviceClient<CamTrap_Viper::CvService>("cv_service");

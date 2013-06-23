@@ -8,6 +8,11 @@
 
 using namespace boost::asio;
 
+//int oneNorm(int* x, int* y);
+//int oneNorm(int* x, int* y)
+//{
+//	return abs(*x - *y) + abs(*(x+1) - *(y+1));
+//}
 void MotorController::updatePosition()
 {
 	//update current motor position
@@ -66,14 +71,14 @@ void MotorController::readCoords()
 		}	
 	
 		//pattern matching
-		if (c[0] == 'L')
+		if ((c[0] == 'L') || (c[1] == 'R'))
 		{
 			ROS_INFO("LRUD indicator: %s", c);
 			sscanf(c, "LR:%d UD:%d", &LR, &UD); 
 			ROS_INFO("[LR, UD] = [%d,%d]", LR, UD);
 			read_lrud = 1;
 		}
-		else if (c[0] == 'X')
+		else if ((c[0] == 'X') || (c[1] == ':'))
 		{
 			ROS_INFO("Offset message: %s", c);
 			sscanf(c, "X:%d Y:%d", &x_steps, &y_steps);
@@ -106,6 +111,7 @@ void MotorController::readResponse()
 	int readRes = 0;
 	int x_conf, y_conf, i;
 	
+
 	while(!readRes)
 	{	
 		//read line
@@ -118,10 +124,10 @@ void MotorController::readResponse()
 				c[i] = b;
 		}
 		
-		//pattern match
-		if (c[0] == 'T')
+		//pattern match		
+		if ((c[0] == 'T') || (c[1] == 'a'))
 		{
-			sscanf(c, "Target X:%d Y:%d", &x_conf, &y_conf);
+			sscanf(c, "Target T1:%d T2:%d", &x_conf, &y_conf);
 			ROS_INFO("Confirmation: [%d, %d]", x_conf, y_conf);
 			readRes = 1;
 		}
@@ -138,6 +144,7 @@ void MotorController::readResponse()
 	return;
 	
 }
+
 
 void MotorController::writeString(char* s)
 {

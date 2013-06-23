@@ -9,6 +9,11 @@ add_service_files(
 	CvService.srv
 )
 
+add_message_files(
+	FILES
+	LogPacket.msg
+)
+
 #generate services and messages
 generate_messages(
 	DEPENDENCIES
