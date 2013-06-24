@@ -1,5 +1,6 @@
 #include "CamTrap_Viper/CvService.h"
-
+#include <stdlib.h>
+#include <string.h>
 class CVLocalizer
 {
 	public:
@@ -7,6 +8,7 @@ class CVLocalizer
 		double timestamp;
 		double offset_const_x;
 		double offset_const_y;
+		char video_name[100];
 	
 		CVLocalizer(int x_init, int y_init, const int imgW, const int imgH, const int FOV_X, const int FOV_Y);
 		

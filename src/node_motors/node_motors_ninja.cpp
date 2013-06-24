@@ -3,7 +3,7 @@
 #include <sstream>
 #include <iostream>
 #include <time.h>
-
+#include <string.h>
 #include <sys/statvfs.h>
 #include "CamTrap_Viper/CvService.h"
 #include "CamTrap_Viper/LogPacket.h"
@@ -40,9 +40,10 @@ int main(int argc, char** argv){
 	MotorController mctrl("/dev/ttyUSB0", 19200, 0.0, 0.0);
 	
 	std::string response;
+	std_msgs::String file_name;
 	
-	//Check new Position (should be old plus 10)	
-	ROS_INFO("Checking position");
+	CamTrap_Viper::LogPacket msg;
+//	ROS_INFO("Checking position");
 
 	mctrl.updatePanTilt();	
 	
@@ -54,7 +55,16 @@ int main(int argc, char** argv){
       {
 			mctrl.new_pan = mctrl.pan_pos + srv.response.x_degree;  
 			mctrl.new_tilt = mctrl.tilt_pos + srv.response.y_degree;
-       	mctrl.updatePosition();
+			//file_name = srv.response.file_name;
+			
+			msg.file_name = srv.response.file_name;
+			msg.x_pos = mctrl.new_pan;
+			msg.y_pos = mctrl.new_tilt;
+       	
+			mctrl.updatePosition();
+
+			pub.publish(msg);
+			
       }   
       else
       {   

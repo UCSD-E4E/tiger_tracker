@@ -1,5 +1,6 @@
 #include "CamTrap_Viper/CvService.h"
 #include "cv_localizer.h"
+#include <ros/ros.h>
 #define PI 3.14159
 
 void CVLocalizer::updateLocation(int updated_x, int updated_y)
@@ -45,14 +46,18 @@ CVLocalizer::CVLocalizer(int x_init, int y_init, const int imgW, const int imgH,
 
 bool CVLocalizer::newCoords(CamTrap_Viper::CvService::Request &req, CamTrap_Viper::CvService::Response &res)
 {
+	std::stringstream ss;
 	if (req.localization_request == 0)
 	{
-	//	ROS_INFO("Recieved CV localization request\n");
+		ROS_INFO("Recieved CV localization request\n");
 		res.x_offset = x;
 		res.x_degree = (180/(PI))*atan2((x*offset_const_x),1);
 		
 		res.y_offset = y;
 		res.y_degree = (180/(PI))*atan2((y*offset_const_y),1);
+
+		ss << video_name;
+		res.file_name = ss.str();
 	}
 	return true;
 }

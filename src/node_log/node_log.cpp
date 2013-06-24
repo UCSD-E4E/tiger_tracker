@@ -4,19 +4,33 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include "CamTrap_Viper/LogPacket.h"
+
 using namespace std;
 
 
-void movementCallback(const std_msgs::String::ConstPtr& msg)
+void movementCallback(const CamTrap_Viper::LogPacket msg)
 {
-	string logLine;
+
+	/*****Log CSV Structure*****
+	Video Name, pan posiion, tilt position
+	***************************/
+	char logLine[100];
 	ofstream logfile;
 	ifstream logfile2;
-  
+   stringstream pan_pos (stringstream::in | stringstream::out);
+   stringstream tilt_pos (stringstream::in | stringstream::out);
+	
 	//opening the logfile to write on it
-  	logfile.open("/home/viki/groovy_workspace/CamTrap_Viper/src/node_log/log.csv", ios::app);
+  	logfile.open("/home/viki/catkin_ws/src/tiger_tracker/src/node_log/log.csv", ios::app);
   
-    logfile << msg->data.c_str() << std::endl; //writing data from msg to log file
+	 //convert message data to strings
+	 pan_pos << msg.x_pos;
+    tilt_pos << msg.y_pos;
+	sprintf(logLine, "%s,%f,%f\n",msg.file_name.c_str(), msg.x_pos, msg.y_pos);
+   ROS_INFO("LOG X:%f Y:%f", msg.x_pos, msg.y_pos);
+   logfile << logLine; 
+	//logfile << msg.file_name.c_str() << ',' << pan_pos << ',' << tilt_pos << std::endl; //writing data from msg to log file
     logfile.close();
     
 	//block of code I used to check if the text was copied to the log file

@@ -72,9 +72,9 @@ int main(int argc, char **argv)
 	
 	/* initialize video writer */
 	CvVideoWriter *flirWriter;
-	char fname[100];
-	sprintf(fname, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
-	flirWriter = cvCreateVideoWriter(fname, CV_FOURCC('D','I','V','X'), 17, cvSize(FLIR_FRAME_WIDTH, FLIR_FRAME_HEIGHT), 1);
+	//char fname[100];
+	sprintf(object_tracker.video_name, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
+	flirWriter = cvCreateVideoWriter(object_tracker.video_name, CV_FOURCC('D','I','V','X'), 17, cvSize(FLIR_FRAME_WIDTH, FLIR_FRAME_HEIGHT), 1);
 	
 	/* main loop */
 	int T;
@@ -113,8 +113,13 @@ while (ros::ok())
 	{
 		cvReleaseVideoWriter(&flirWriter);
 		pTime = gmtime(&rawTime);
-		sprintf(fname, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
-		flirWriter = cvCreateVideoWriter(fname, CV_FOURCC('D','I','V','X'), 17, cvSize(FLIR_FRAME_WIDTH, FLIR_FRAME_HEIGHT), 1);
+		
+		//object_tracker.video_name;
+		int sprint_test = sprintf(object_tracker.video_name, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
+
+		if (sprint_test < 0)
+			ROS_ERROR("sprintf error");
+		flirWriter = cvCreateVideoWriter(object_tracker.video_name, CV_FOURCC('D','I','V','X'), 17, cvSize(FLIR_FRAME_WIDTH, FLIR_FRAME_HEIGHT), 1);
 		timecnt = time(&rawTime) + duration_sec;
 	}
 
@@ -137,12 +142,12 @@ while (ros::ok())
 
 	/* Filter vertical blobs ( between 1 & -1 rad)*/
 	
-	CvBlobs::iterator ita=blobs.begin();
-/*	while(ita!=blobs.end())
+/*	CvBlobs::iterator ita=blobs.begin();
+	while(ita!=blobs.end())
 	{
 		CvBlob *blob=(*ita).second;
-		filter out horizontal blobs
-		if (((cvAngle(blob)<-1.0)||(cvAngle(blob)>1.0)))
+	//	filter out horizontal blobs
+		if (((cvAngle(blob)>-1.0)&&(cvAngle(blob)<1.0)))
 		{
 			cvReleaseBlob(blob);
 			CvBlobs::iterator tmp=ita;
@@ -151,7 +156,7 @@ while (ros::ok())
 		}
 		else
 			++ita;
-	}	*/
+	}*/	
 
 	/* Filter by area (less than biggest blob)*/
 	bigstblob = cvGreaterBlob(blobs);
