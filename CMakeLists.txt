@@ -58,10 +58,15 @@ target_link_libraries(com ${catkin_LIBRARIES})
 add_executable(log src/node_log/node_log.cpp)
 target_link_libraries(log ${catkin_LIBRARIES})
 
-find_package(OpenCV REQUIRED)
+add_executable(thermalvid src/node_thermalvid/node_thermalvid.cpp include/cv_localizer.cpp)
+target_link_libraries(thermalvid ${catkin_LIBRARIES})
+add_dependencies(thermalvid camtrap_viper_gencpp)
+
+
 target_link_libraries(cv ${OpenCV_LIBS})
 target_link_libraries(cv /usr/local/lib/libcvblob.so)
 target_link_libraries(webcam ${OpenCV_LIBS})
+target_link_libraries(thermalvid ${OpenCV_LIBS})
 #target_link_libraries(motors_mock phidget21)
 #find_package(catkin REQUIRED COMPONENTS roscpp rospy std_msgs message_generation)
 
