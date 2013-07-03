@@ -1,0 +1,3 @@
+<launch>
+	<node pkg="CamTrap_Viper" type="node_lowres.py" name="node_lowres"/>		
+</launch>
