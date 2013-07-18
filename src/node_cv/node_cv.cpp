@@ -40,11 +40,11 @@ int main(int argc, char **argv)
 
 	//Initialize Cameras:	
 	// set the norm to NTSC for FLIR - and input to 1 for capture device  
-	system("v4l2-ctl -s NTSC -i 1");   //if FLIR is video0
-	//system("v4l2-ctl -d /dev/video1 -s NTSC -i 1"); if FLIR is video1
+	//system("v4l2-ctl -s NTSC -i 1");   //if FLIR is video0
+	system("v4l2-ctl -d /dev/video1 -s NTSC -i 1"); //if FLIR is video1
 	
 	/* Initialize the IRCam */
-	CvCapture *capture = cvCreateCameraCapture(0);
+	CvCapture *capture = cvCreateCameraCapture(1);
 	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, FLIR_FRAME_WIDTH);
 	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, FLIR_FRAME_HEIGHT);
   
