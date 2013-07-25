@@ -6,6 +6,8 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <iostream>
+#include <sys/time.h>
+
 #include <opencv/cv.h>
 #include <opencv/highgui.h>
 #include <ros/ros.h>
@@ -22,33 +24,40 @@
 using namespace cvb;
 using namespace std;
 
+int mSeconds(int secs, int usecs);
+
+int mSeconds(int secs, int usecs)
+{
+    return (secs*1000 + usecs/1000); 
+}
 
 int main(int argc, char **argv)
 {
-	const int FLIR_FRAME_WIDTH  = 480;
-   const int FLIR_FRAME_HEIGHT = 320;
-   const int FLIR_FOV_X = 36;
-   const int FLIR_FOV_Y = 27;
+    struct timeval tv;
+    //const int FLIR_FRAME_WIDTH  = 480;
+    //const int FLIR_FRAME_HEIGHT = 320;
+    const int FLIR_FOV_X = 36;
+    const int FLIR_FOV_Y = 27;
 	const double FLIR_WRITER_FRAME_RATE = 29.5;
 
 	int duration_sec = 60 * 5;
 
 	ros::init(argc, argv, "cv_service");
 	ros::NodeHandle n;
-
-	CVLocalizer object_tracker(0, 0, FLIR_FRAME_WIDTH, FLIR_FRAME_HEIGHT, FLIR_FOV_X, FLIR_FOV_Y);
-	object_tracker.setTimestamp(0);
-
-	ros::ServiceServer service = n.advertiseService("cv_service", &CVLocalizer::newCoords, &object_tracker);
-
-	//Initialize Cameras:	
+    
+	// Initialize Cameras:	
 	// set the norm to NTSC for FLIR - and input to 1 for capture device  
 	system("v4l2-ctl -s NTSC -i 1");   //if FLIR is video0
-	//system("v4l2-ctl -d /dev/video1 -s NTSC -i 1"); if FLIR is video1
+	// system("v4l2-ctl -d /dev/video1 -s NTSC -i 1"); if FLIR is video1
 	
-	/* Initialize the IRCam */
+	// Initialize the IRCam 
 	CvCapture *capture = cvCreateCameraCapture(0);
-	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, FLIR_FRAME_WIDTH);
+    cvQueryFrame(capture);
+	
+    const int FLIR_FRAME_WIDTH = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
+
+    const int FLIR_FRAME_HEIGHT = (int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
+    cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, FLIR_FRAME_WIDTH);
 	cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, FLIR_FRAME_HEIGHT);
   
 	/* Always check if the program can find a device */
@@ -58,7 +67,12 @@ int main(int argc, char **argv)
 		ROS_ERROR("Can not open flir");
 		return -1;
 	}
-
+    
+    
+	CVLocalizer object_tracker(0, 0, FLIR_FRAME_WIDTH, FLIR_FRAME_HEIGHT, FLIR_FOV_X, FLIR_FOV_Y);
+	object_tracker.setTimestamp(0);
+    
+    ros::ServiceServer service = n.advertiseService("cv_service", &CVLocalizer::newCoords, &object_tracker);
 	/* creating display window */
 	//use only for testing
 	cvNamedWindow( "FLIR",CV_WINDOW_AUTOSIZE);
@@ -86,10 +100,15 @@ int main(int argc, char **argv)
 	long int timecnt = time(&rawTime) + duration_sec;
   	static int posX;
   	static int posY;
-
+    double start;
+    double stop;
+    
 while (ros::ok())
 {
-	/* Obtain a frame from the device */
+    gettimeofday(&tv, NULL);
+    start = mSeconds(tv.tv_sec, tv.tv_usec);
+    
+	// Obtain a frame from the device 
 	img = cvQueryFrame(capture);
 
 	/* Always check if the device returns a frame */
@@ -146,6 +165,12 @@ while (ros::ok())
 	cvZero(gray_img);
 	cvZero(thres_img);
 	cvZero(label_img);
+    
+    do
+    {
+        gettimeofday(&tv, NULL);
+        stop = mSeconds(tv.tv_sec, tv.tv_usec);
+    }while (stop-start < 1000.0/FLIR_WRITER_FRAME_RATE);
 
 	ros::spinOnce();
 	}

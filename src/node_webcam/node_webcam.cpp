@@ -17,6 +17,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv/cxcore.h>
 #include <opencv/cvblob.h>
+#include <opencv2/core/core.hpp>
 #include "CamTrap_Viper/CvService.h"
 #include "cv_localizer.h"
  
@@ -25,13 +26,16 @@ using namespace std;
  
 int main(int argc, char * argv[])
 {
+    struct timeval tv;
+    
+    const double TICK_FREQ = cv::getTickFrequency();
     const int WEB_FOV_X = 36;
     const int WEB_FOV_Y = 27;
     //const int WEB_WRITER_FRAME_RATE = 30;
     ros::init(argc, argv, "cv_service");
-	 ros::NodeHandle n;
+	ros::NodeHandle n;
    
-    int duration_sec = 60 * 5;
+    int duration_sec = 60 * 1;
 
 	/* Initialize the camera */
    CvCapture *capture = cvCreateCameraCapture(1);
@@ -40,14 +44,10 @@ int main(int argc, char * argv[])
 
 	const int WEB_FRAME_WIDTH = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
 	const int WEB_FRAME_HEIGHT = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
-	const double WEB_WRITER_FRAME_RATE = 13.33;//(double)cvGetCaptureProperty(capture, CV_CAP_PROP_FPS);
-	//ROS_INFO("img fps:%f", WEB_WRITER_FRAME_RATE);
-   //cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, WEB_FRAME_WIDTH);
-   //cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, WEB_FRAME_HEIGHT);
-//CamCapture = cvCreateFileCapture("http://192.168.2.135:81/videostream.asf?user=viki&pwd=viki&resolution=640*480");
- //  system("v4l2-ctl -d /dev/video1 -s NTSC -i 1");// if FLIR is video1
+	const double WEB_WRITER_FRAME_RATE = 20;
+
 	/* Initialize the WebCam */
-    //cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, WEB_FRAME_HEIGHT);
+    cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, WEB_FRAME_HEIGHT);
  
     /* Always check if the program can find a device */
     if (!capture)
@@ -70,7 +70,7 @@ int main(int argc, char * argv[])
 	/* initialize video writer */
    
     CvVideoWriter *WebWriter;
-    sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/webcam/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
+    sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/riley/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
 
     WebWriter = cvCreateVideoWriter(video_name, CV_FOURCC('D','I','V','X'), WEB_WRITER_FRAME_RATE, cvSize(WEB_FRAME_WIDTH, WEB_FRAME_HEIGHT), 1);	
    
@@ -84,8 +84,12 @@ int main(int argc, char * argv[])
 
 	while( current_time < stop_time )
 	{
- 	/* Obtain a frame from the device */
-   img = cvQueryFrame(capture);
+        gettimeofday(&tv, NULL);
+        double start = (tv.tv_sec*1000 + tv.tv_usec/1000);
+
+        double start_ticks = (double)cv::getTickCount();
+ 	    /* Obtain a frame from the device */
+        img = cvQueryFrame(capture);
  
     /* Always check if the device returns a frame */
     if( !img )
@@ -101,7 +105,7 @@ int main(int argc, char * argv[])
     {
        cvReleaseVideoWriter(&WebWriter);
        pTime = gmtime(&rawTime);
-       int sprint_test = sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/webcam/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
+       int sprint_test = sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/riley/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
        WebWriter = cvCreateVideoWriter(video_name, CV_FOURCC('D','I','V','X'), WEB_WRITER_FRAME_RATE, cvSize(WEB_FRAME_WIDTH, WEB_FRAME_HEIGHT), 1);
 		timecnt = time(&rawTime) + duration_sec;
 	 }
@@ -109,15 +113,22 @@ int main(int argc, char * argv[])
 	cvWriteFrame(WebWriter, cvQueryFrame( capture ));
  		
     /* Publish videos */
-    cvShowImage( "WEBCAM", img);
+    //cvShowImage("WEBCAM", img);
     /* cleaning memory */
     cvWaitKey(1);
     cvZero(img);
-  
+    
+    double stop_ticks = (double)cv::getTickCount();    
+    //ROS_INFO("Wrote frame");
+    
+    /*while (stop_ticks - start_ticks < ((1/TICK_FREQ)*1000.0/WEB_WRITER_FRAME_RATE))
+    {
+        stop_ticks = (double)cv::getTickCount();    
+    }*/
     ros::spinOnce();
 
 	}
- 
+     
 	/* Clean up memory */
 	cvReleaseCapture ( &capture );
 	cvReleaseVideoWriter(&WebWriter);
