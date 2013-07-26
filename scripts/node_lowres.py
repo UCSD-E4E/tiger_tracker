@@ -1,8 +1,8 @@
 #!/usr/bin/env python
 #Grab the 64 pixel "temperatures" from MLX90620.  Comma separate them and save them to a .csv file 
-#on each line we'll have: amibent_temp,pixel_1, pixel_2, pixel_3,...,pixel_64,
-#save video files too
-#"hiccup" every 5 minutes to generate new video and csv files
+#on each line we'll have: amibent_temp,pixel_1, pixel_2, pixel_3,...,pixel_64,time_stamp
+#save time-stamped image frames too
+
 
 import numpy as np
 import fnmatch
@@ -11,7 +11,7 @@ import serial
 import Image
 import pygame
 import time
-from time import gmtime, strftime
+from time import localtime, strftime
 import traceback
 import os
 import rospy
@@ -24,17 +24,54 @@ class Cell:
 	x = 0
 	y = 0
 	size = 15
-	intensity = 0;
+
 	def __init__(self, pos_x, pos_y, size):
 		self.x = pos_x
 		self.y = pos_y
 		self.size = size
-	def render(self, intensity, screen):
-		self.intensity = intensity
+	def render(self, intensity, value, screen):
+		font = pygame.font.SysFont("times", 15,bold=True)				
 		col = [intensity, intensity, intensity]
-		pygame.draw.rect(screen, col, (self.x, self.y, self.size, self.size), 0)	
+		rect = pygame.draw.rect(screen, col, (self.x, self.y, self.size, self.size), 0)
+		text = font.render(str(value),1, (255,0,0))
+		screen.blit(text,rect,special_flags=0)	
+
+
+
+#display some stats on screen
+def renderStats(mean_frame_temp, frame_std_dev, high_frame_temp, low_frame_temp, ambient_temp):
+	#format all the floats	
+	mean_frame_temp_str = str.ljust("Mean temp of this frame",48) + " = %.2f" %mean_frame_temp
+	frame_std_dev_str = str.ljust("Std Deviation of this frame",48) + " = %.2f" % frame_std_dev
+	high_frame_temp_str = str.ljust("High temp of this frame",48) + " = %.1f" % high_frame_temp
+	low_frame_temp_str = str.ljust("Low temp of this frame",48) + " = %.1f" % low_frame_temp	
+	ambient_temp_str = str.ljust("Ambient temp of this frame",46) + " = %.1f" %  ambient_temp	
+
+	myfont = pygame.font.SysFont("times", 18)
+	
+	#generate and display all labels
+	mean_frame_temp_label = myfont.render(mean_frame_temp_str, 1, (255,255,255))
+	screen.blit(mean_frame_temp_label, (0,(CELL_SIZE * row)))
+
+	frame_std_dev_label = myfont.render(frame_std_dev_str, 1, (255,255,255))
+	screen.blit(frame_std_dev_label, (0,(CELL_SIZE * (row+1))))
+
+	high_frame_temp_label = myfont.render(high_frame_temp_str, 1, (255,255,255))
+	screen.blit(high_frame_temp_label, (0,(CELL_SIZE * (row+2))))
+
+	low_frame_temp_label = myfont.render(low_frame_temp_str, 1, (255,255,255))
+	screen.blit(low_frame_temp_label, (0,(CELL_SIZE * (row+3))))
+
+	ambient_temp_label = myfont.render(ambient_temp_str, 1, (255,255,255))
+	screen.blit(ambient_temp_label, (0,(CELL_SIZE * (row+4))))
+
+
+
 
 def lowres():
+	csv_file_directory = "/home/viki/Documents/IRVideo/IR_CSV_Files/"	
+	IR_images_directory = "/home/viki/Videos/IRVideo/imgtemp/"
+
 	rospy.init_node('lowres')
 	ser = serial.Serial()
 	ser.port = "/dev/ttyACM0"
@@ -65,15 +102,13 @@ def lowres():
 		exit()
 
 	if ser.isOpen():
-	
-		imgcnt = 0
 		cell_size = 50
 	
 		#initialize pygame display 
 		#grid[i].render(data_vector[(i % row_Effective) * column_Effective + (i / 	row_Effective)])				
 		pygame.init()
 		white = [255,255,255]
-		size = [cell_size*column_Effective, cell_size*row_Effective]
+		size = [cell_size*column_Effective, cell_size*(row_Effective+5)]
 		screen = pygame.display.set_mode(size)
 		screen.fill(white);
 		grid = [];
@@ -87,7 +122,7 @@ def lowres():
 		#	q -= 1
 		
 		for i in range(len(grid)):
-			grid[i].render(127.6, screen)
+			grid[i].render(127.6, 0,screen)
 	
 		pygame.display.flip()
 		try:
@@ -98,30 +133,15 @@ def lowres():
 			#make sure we read both the ambient and the data each cycle
 			read_amb = False
 			read_dat = False
-	
-			#this is the start time for our first csv and video files		
-			startTime = time.time()		
-			fileName = strftime("%m-%d-%H:%M:%S",gmtime())
-	
-			#open the .csv file
-			csvFile = open("/home/viki/Documents/IRVideo/IR_CSV_Files/"+fileName+".csv", 'a+')
 		
-			while not rospy.is_shutdown():
-				currentTime = time.time()
-
-				#every 5 minutes, generate a different video file
-				if (currentTime - startTime) >= (60.*5):
-					outstr = 'ffmpeg -f image2 -r 5 -i /home/viki/Videos/IRVideo/imgtemp/%d.jpeg -vcodec mpeg4 -y /home/viki/Videos/IRVideo/'+fileName+'.mp4'
-					os.system(outstr)
-					clearImages = "rm /home/viki/Videos/IRVideo/imgtemp/*.jpeg"
-					os.system(clearImages)
-					imgcnt = 0
-					startTime = time.time()				
-					fileName = strftime("%m-%d-%H:%M:%S",gmtime())
-					csvFile = open("/home/viki/Documents/IRVideo/IR_CSV_Files/"+fileName+".csv", 'a+')
-			
+			current_time = strftime("%m-%d-%H:%M:%S",localtime())	
+			csvFileName = "Wolf Center " + current_time
+			while not rospy.is_shutdown():			
 				response = ser.readline()
-			
+				current_time = strftime("%m-%d-%H:%M:%S",localtime())			
+				csvFile = open(csv_file_directory+csvFileName+".csv", 'a+')
+
+
 				#add len(response) <= 16 to address bug where sometimes we read lines like this:
 				# Ambient.6 24.5 23.7 23.8 25.4 24.4 24.7 24.6 24.5 24.9 25.1 23.2
 				if response.startswith("Ambient") and len(response) <=16: 
@@ -142,7 +162,32 @@ def lowres():
 						continue
 	
 					if len(data_vector) == 64: #make sure we got 64 pixels
-				
+				 		#compute some stats						
+						mean_frame_temp = np.mean(data_vector)
+						frame_std_dev = np.std(data_vector)
+						high_frame_temp = max(data_vector)
+						low_frame_temp = min(data_vector)
+						ambient_temp = ambient
+
+						renderStats(mean_frame_temp, frame_std_dev, high_frame_temp, low_frame_temp, ambient_temp):
+
+						#write in this row of the .csv file
+						#on each line we'll have: amibent_temp,pixel_1,pixel_2,pixel_3,...,pixel_64,time_stamp
+						ambientTemp = str(ambient)				
+						csvFile.write(ambientTemp)   #start with ambient temp
+						csvFile.write(',')
+						for i in range(0, len(data_vector)):
+							value = str(data_vector[i])					
+							csvFile.write(value)
+							csvFile.write(',')
+						csvFile.write(current_time) #time stamp
+						csvFile.write(',')
+						csvFile.write('\n') 		   #we're done with this row
+						csvFile.close()
+						#save the frame   
+
+						data_vector_copy = list(data_vector) #preserve original temp values					
+
 						#assign colors for cells
 						for i in range(len(data_vector)):
 							data_vector[i] -= 10
@@ -154,24 +199,10 @@ def lowres():
 				
 						#display those colors
 						for i in range(len(grid)):
-							grid[i].render(data_vector[i], screen) 
-	
-						#write in this row of the .csv file
-						#on each line we'll have: amibent_temp,pixel_1,pixel_2,pixel_3,...,pixel_64,
-						ambientTemp = str(ambient)				
-						csvFile.write(ambientTemp)   #start with ambient temp
-						csvFile.write(',')
-						for i in range(0, len(data_vector)):
-							value = str(data_vector[i])					
-							csvFile.write(value)
-							csvFile.write(',')
-			
-						#we're done with this row
-						csvFile.write('\n')
-				
-						#save the frame   
-						pygame.image.save(pygame.display.get_surface(), '/home/viki/Videos/IRVideo/imgtemp/'+str(imgcnt)+'.jpeg')
-						imgcnt += 1
+							grid[i].render(data_vector[i], data_vector_copy[i], screen)
+
+
+						pygame.image.save(pygame.display.get_surface(), IR_images_directory+current_time+'.jpeg')
 					
 						pygame.display.flip()
 						read_amb = False
