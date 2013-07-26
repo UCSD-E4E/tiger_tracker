@@ -24,15 +24,17 @@ class Cell:
 	x = 0
 	y = 0
 	size = 15
-	intensity = 0;
+
 	def __init__(self, pos_x, pos_y, size):
 		self.x = pos_x
 		self.y = pos_y
 		self.size = size
-	def render(self, intensity, screen):
-		self.intensity = intensity
+	def render(self, intensity, value, screen):
+		font = pygame.font.SysFont("times", 15,bold=True)				
 		col = [intensity, intensity, intensity]
-		pygame.draw.rect(screen, col, (self.x, self.y, self.size, self.size), 0)	
+		rect = pygame.draw.rect(screen, col, (self.x, self.y, self.size, self.size), 0)
+		text = font.render(str(value),1, (255,0,0))
+		screen.blit(text,rect,special_flags=0)	
 
 
 
@@ -120,7 +122,7 @@ def lowres():
 		#	q -= 1
 		
 		for i in range(len(grid)):
-			grid[i].render(127.6, screen)
+			grid[i].render(127.6, 0,screen)
 	
 		pygame.display.flip()
 		try:
@@ -160,21 +162,7 @@ def lowres():
 						continue
 	
 					if len(data_vector) == 64: #make sure we got 64 pixels
-				
-						#assign colors for cells
-						for i in range(len(data_vector)):
-							data_vector[i] -= 10
-							data_vector[i] *=  (150/(40-5))
-							if data_vector[i] > 255:
-								data_vector[i] = 255
-							if data_vector[i] < 0:
-								data_vector[i] = 0
-				
-						#display those colors
-						for i in range(len(grid)):
-							grid[i].render(data_vector[i], screen) 
-						
-						#compute some stats						
+				 		#compute some stats						
 						mean_frame_temp = np.mean(data_vector)
 						frame_std_dev = np.std(data_vector)
 						high_frame_temp = max(data_vector)
@@ -197,6 +185,23 @@ def lowres():
 						csvFile.write('\n') 		   #we're done with this row
 						csvFile.close()
 						#save the frame   
+
+						data_vector_copy = list(data_vector) #preserve original temp values					
+
+						#assign colors for cells
+						for i in range(len(data_vector)):
+							data_vector[i] -= 10
+							data_vector[i] *=  (150/(40-5))
+							if data_vector[i] > 255:
+								data_vector[i] = 255
+							if data_vector[i] < 0:
+								data_vector[i] = 0
+				
+						#display those colors
+						for i in range(len(grid)):
+							grid[i].render(data_vector[i], data_vector_copy[i], screen)
+
+
 						pygame.image.save(pygame.display.get_surface(), IR_images_directory+current_time+'.jpeg')
 					
 						pygame.display.flip()
