@@ -33,19 +33,19 @@ int main(int argc, char * argv[])
     const int WEB_FOV_Y = 27;
     //const int WEB_WRITER_FRAME_RATE = 30;
     ros::init(argc, argv, "cv_service");
-	ros::NodeHandle n;
+	 ros::NodeHandle n;
    
     int duration_sec = 60 * 1;
 
 	/* Initialize the camera */
-   CvCapture *capture = cvCreateCameraCapture(1);
+    CvCapture *capture = cvCreateCameraCapture(1);
 	cvQueryFrame(capture);
-
+	
 
 	const int WEB_FRAME_WIDTH = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
 	const int WEB_FRAME_HEIGHT = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
-	const double WEB_WRITER_FRAME_RATE = 20;
-
+	const double WEB_WRITER_FRAME_RATE = 15;
+	
 	/* Initialize the WebCam */
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, WEB_FRAME_HEIGHT);
  
@@ -64,68 +64,67 @@ int main(int argc, char * argv[])
 	
 	/* Time init */
     time_t rawTime = time (NULL);
-    tm *pTime = gmtime(&rawTime);
+    tm *pTime = localtime(&rawTime);
 
     char video_name[100];
 	/* initialize video writer */
    
     CvVideoWriter *WebWriter;
-    sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/riley/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
+    sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/webcam/", pTime->tm_mon + 1, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
 
     WebWriter = cvCreateVideoWriter(video_name, CV_FOURCC('D','I','V','X'), WEB_WRITER_FRAME_RATE, cvSize(WEB_FRAME_WIDTH, WEB_FRAME_HEIGHT), 1);	
    
-	/* time */
-	time_t current_time;
-	current_time = time (NULL);
-	long int stop_time = current_time + 10;
 	
+   	double tick_duration = (TICK_FREQ/WEB_WRITER_FRAME_RATE);//1000.0/(WEB_WRITER_FRAME_RATE*TICK_FREQ);
+	ROS_INFO("Tick Frequency: %f\nDuration in ticks: %f", TICK_FREQ, tick_duration);
 	/* main loop */
     long int timecnt = time(&rawTime) + duration_sec;
 
-	while( current_time < stop_time )
+	while(ros::ok())
 	{
-        gettimeofday(&tv, NULL);
-        double start = (tv.tv_sec*1000 + tv.tv_usec/1000);
 
         double start_ticks = (double)cv::getTickCount();
+		//ROS_INFO("Start ticks = %f", start_ticks);
  	    /* Obtain a frame from the device */
         img = cvQueryFrame(capture);
  
-    /* Always check if the device returns a frame */
-    if( !img )
-    {
-       ROS_ERROR("Error retrieving webcam frame\n");
-       return -1;
-    }
+    	/* Always check if the device returns a frame */
+    	if( !img )
+    	{
+      		ROS_ERROR("Error retrieving webcam frame\n");
+       		return -1;
+    	}
     
-	 rawTime = time (NULL);
+	 	rawTime = time (NULL);
  
-    /* reset video writer for every X second */
-    if (timecnt <= time(&rawTime))
-    {
-       cvReleaseVideoWriter(&WebWriter);
-       pTime = gmtime(&rawTime);
-       int sprint_test = sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/riley/Videos/", pTime->tm_mon, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
-       WebWriter = cvCreateVideoWriter(video_name, CV_FOURCC('D','I','V','X'), WEB_WRITER_FRAME_RATE, cvSize(WEB_FRAME_WIDTH, WEB_FRAME_HEIGHT), 1);
-		timecnt = time(&rawTime) + duration_sec;
-	 }
+    	/* reset video writer for every X second */
+    	if (timecnt <= time(&rawTime))
+    	{
+       		cvReleaseVideoWriter(&WebWriter);
+      	 	pTime = localtime(&rawTime);
+       		sprintf(video_name, "%s%d-%d-%d:%d:%d%s", "/home/viki/Videos/webcam/", pTime->tm_mon+1, pTime->tm_mday, pTime->tm_hour, pTime->tm_min, pTime->tm_sec, ".avi");
+       		WebWriter = cvCreateVideoWriter(video_name, CV_FOURCC('D','I','V','X'), WEB_WRITER_FRAME_RATE, cvSize(WEB_FRAME_WIDTH, WEB_FRAME_HEIGHT), 1);
+			timecnt = time(&rawTime) + duration_sec;
+	 	}
 	
-	cvWriteFrame(WebWriter, cvQueryFrame( capture ));
+		//cvWriteFrame(WebWriter, cvQueryFrame(capture));
+		cvWriteFrame(WebWriter, img);
  		
-    /* Publish videos */
-    //cvShowImage("WEBCAM", img);
-    /* cleaning memory */
-    cvWaitKey(1);
-    cvZero(img);
+    	/* Publish videos */
+    	cvShowImage("WEBCAM", img);
+    	/* cleaning memory */
+    	cvWaitKey(1);
+    	//cvZero(img);
     
-    double stop_ticks = (double)cv::getTickCount();    
-    //ROS_INFO("Wrote frame");
+    	double stop_ticks = (double)cv::getTickCount();    
     
-    /*while (stop_ticks - start_ticks < ((1/TICK_FREQ)*1000.0/WEB_WRITER_FRAME_RATE))
-    {
-        stop_ticks = (double)cv::getTickCount();    
-    }*/
-    ros::spinOnce();
+//   		ROS_INFO("start-stop=%f", stop_ticks - start_ticks); 
+    	while (stop_ticks - start_ticks < tick_duration)
+    	{
+        	stop_ticks = (double)cv::getTickCount();    
+			//ROS_INFO("waiting for correct frame timing");
+    	}
+    	ros::spinOnce();
 
 	}
      
