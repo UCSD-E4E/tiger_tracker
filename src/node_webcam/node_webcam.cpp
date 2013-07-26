@@ -35,19 +35,20 @@ int main(int argc, char * argv[])
     ros::init(argc, argv, "cv_service");
 	 ros::NodeHandle n;
    
-    int duration_sec = 60 * 1;
+    int duration_sec = 60 * 5;
 
 	/* Initialize the camera */
     CvCapture *capture = cvCreateCameraCapture(1);
 	cvQueryFrame(capture);
-	
+	ros::Duration(2).sleep();	
 
-	const int WEB_FRAME_WIDTH = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
-	const int WEB_FRAME_HEIGHT = (int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
+	const int WEB_FRAME_WIDTH = 320;//(int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
+	const int WEB_FRAME_HEIGHT = 240;//(int)cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
 	const double WEB_WRITER_FRAME_RATE = 15;
 	
 	/* Initialize the WebCam */
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, WEB_FRAME_HEIGHT);
+    cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, WEB_FRAME_WIDTH);
  
     /* Always check if the program can find a device */
     if (!capture)

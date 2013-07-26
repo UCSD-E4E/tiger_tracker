@@ -29,9 +29,9 @@ int main(int argc, char **argv)
     const double TICK_FREQ = cv::getTickFrequency();
     const int FLIR_FOV_X = 36;
     const int FLIR_FOV_Y = 27;
-	 const double FLIR_WRITER_FRAME_RATE = 29.5;
+	 const double FLIR_WRITER_FRAME_RATE = 15;
 
-	int duration_sec = 60 * 1;
+	int duration_sec = 60 * 5;
 
 	ros::init(argc, argv, "cv_service");
 	ros::NodeHandle n;
@@ -45,9 +45,9 @@ int main(int argc, char **argv)
 	CvCapture *capture = cvCreateCameraCapture(0);
    cvQueryFrame(capture);
 	
-    const int FLIR_FRAME_WIDTH = 700;//(int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
+    const int FLIR_FRAME_WIDTH = 480;//(int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH);
 
-    const int FLIR_FRAME_HEIGHT = 576;//(int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
+    const int FLIR_FRAME_HEIGHT = 320;//(int) cvGetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT);
     cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_WIDTH, FLIR_FRAME_WIDTH);
 	 cvSetCaptureProperty(capture, CV_CAP_PROP_FRAME_HEIGHT, FLIR_FRAME_HEIGHT);  
 
@@ -87,9 +87,9 @@ int main(int argc, char **argv)
     
 while (ros::ok())
 {
+	double start_ticks = (double)cv::getTickCount();
 	// Obtain a frame from the device 
 	img = cvQueryFrame(capture);
-	double start_ticks = (double)cv::getTickCount();
 
 	/* Always check if the device returns a frame */
 	if( !img )
@@ -99,7 +99,7 @@ while (ros::ok())
 	}
 
 	/* remove the watermark */
-	cvSetImageROI(img, cvRect((FLIR_FRAME_WIDTH*367)/480,(FLIR_FRAME_HEIGHT*14)/320,(FLIR_FRAME_WIDTH*90)/480,(FLIR_FRAME_HEIGHT*28)/320));
+	cvSetImageROI(img, cvRect((FLIR_FRAME_WIDTH*367)/480,(FLIR_FRAME_HEIGHT*14)/320,(FLIR_FRAME_WIDTH*90)/480,(FLIR_FRAME_HEIGHT*30)/320));
 	cvZero(img);
 	cvResetImageROI(img);
 
