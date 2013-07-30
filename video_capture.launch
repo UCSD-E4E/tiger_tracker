@@ -1,0 +1,5 @@
+<launch>
+	<node pkg="CamTrap_Viper" type="webcam" name="webcam"/>	
+	<node pkg="CamTrap_Viper" type="thermalvid" name="thermalvid"/>
+	<node pkg="CamTrap_Viper" type="node_lowres.py" name="lowres"/>
+</launch>

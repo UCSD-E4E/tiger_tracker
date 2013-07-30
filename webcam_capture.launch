@@ -1,0 +1,4 @@
+<launch>
+   <node pkg="CamTrap_Viper" type="webcam" name="webcam"/>
+</launch>
+
