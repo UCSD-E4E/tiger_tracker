@@ -20,12 +20,12 @@ img_ct = 0;
 frame_ct = 0; 
 files = {} 
 
-pygame.init() #user identification
+pygame.init()
 size = width, height = 600, 400 
 screen = pygame.display.set_mode(size)
 backGround = (255,255,255)
 black = (0,0,0)
-pygame.display.set_caption("User Identification")
+pygame.display.set_caption("Instructions")
 done = False
 clock=pygame.time.Clock()
 font = pygame.font.Font(None, 36)
@@ -102,7 +102,7 @@ for images in glob.glob('./*.avi'):
                     if w*h > MIN_SIZE:
                         cv2.imshow("Candidates", img_seg)
                         # save segmented image
-                        name = user + "img_cand" + str(img_ct).zfill(6) + ".bmp"
+                        name = "img_cand" + str(img_ct).zfill(6) + ".bmp"
                         cv2.imwrite(CAND_DIRECTORY + name, img_seg)
                         # write file name and info to dictionary
                         writer.write(str(name) + "," + str(x) + "," + str(y) + "," + str(w) + "," + str(h) + "\n")
