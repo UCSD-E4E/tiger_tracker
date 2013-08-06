@@ -7,6 +7,7 @@ import glob
 import sys,  pygame
 import time
 import csv
+import fileinput
 from pygame.locals import *
 
 
@@ -19,12 +20,95 @@ poslist_l = []
 poslist_r = []  
 files = {}
 f_num = 0
-reader = [row for row in csv.reader(open("metadata.csv", "rb"))]
+
+
 pygame.init()
 size = width, height = 600, 400 
 screen = pygame.display.set_mode(size)
 backGround = (255,255,255)
+black = (0,0,0)
+pygame.display.set_caption("Instructions")
+done = False
+clock=pygame.time.Clock()
+font = pygame.font.Font(None, 36)
+display_instructions = True
+instruction_page = 1
+
+while done == False and display_instructions:
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            done = True
+        if event.type == KEYDOWN and event.key == K_SPACE:
+            instruction_page += 1
+            if instruction_page == 4:
+                display_instructions = False
+        elif event.type == KEYDOWN and event.key == K_j:
+            user = "j"
+            print("Hello Jeremy")
+        elif event.type == KEYDOWN and event.key == K_r:
+            user = "r"
+            print("Hello Riley")
+        elif event.type == KEYDOWN and event.key == K_g:
+            user = "g"
+            print("Hello Gabrielle")
+        elif event.type == KEYDOWN and event.key == K_d:
+            user = "d"
+            print("Hello David")
+    screen.fill(backGround)    
+    if instruction_page == 1:
+        text = font.render("Please select the first letter of your first name", True, black)
+        screen.blit(text, [10,10])
+        text = font.render("Hit 'j' for 'Jeremy'", True, black)
+        screen.blit(text, [10,40])
+        text = font.render("Hit 'r' for 'Riley'", True, black)
+        screen.blit(text, [10,70])
+        text = font.render("Hit 'g' for 'Gabrielle'", True, black)
+        screen.blit(text, [10,100])
+        text = font.render("Hit 'd' for 'David'", True, black)
+        screen.blit(text, [10,130])
+        text = font.render("Hit the space bar to continue", True, black)
+        screen.blit(text, [10,170])    
+    if instruction_page == 2:
+        text = font.render("Instructions:", True, black)
+        screen.blit(text, [10,10])
+        text = font.render("Hit one of the arrow keys to save the image", True, black)
+        screen.blit(text, [10,40])
+        text = font.render("Hit the space bar to continue", True, black)
+        screen.blit(text, [10,170])
+    if instruction_page == 3:
+        text = font.render("Hit left arrow if animal is facing left", True, black)
+        screen.blit(text, [10,10])
+        text = font.render("Hit right arrow if animal is facing right", True, black)
+        screen.blit(text, [10,40])
+        text = font.render("Hit up arrow if animal is facing away from camera", True, black)
+        screen.blit(text, [10,70])
+        text = font.render("Hit down arrow if animal is facing towards camera", True, black)
+        screen.blit(text, [10,100])
+        text = font.render("Hit the space bar to continue", True, black)
+        screen.blit(text, [10,170])
+    if instruction_page == 4:
+        text = font.render("Hit the space bar to move to the next picture", True, black)
+        screen.blit(text, [10,10])
+        text = font.render("To ignore an image do not hit any arrows", True, black)
+        screen.blit(text, [10,40])
+        text = font.render("If you are finished marking pictures press 'd'", True, black)
+        screen.blit(text, [10,70])
+        text = font.render("Hit the space bar to continue", True, black)
+        screen.blit(text, [10,170])
+    clock.tick(20)
+    pygame.display.flip()
+pygame.init()
+size = width, height = 600, 400 
+screen = pygame.display.set_mode(size)
+with open("filelist.txt", "a") as writer:
+    pass
+writer.close()
+reader = open("filelist.txt", "r")
+for place in reader: #find save state
+    f_num += 1
+reader.close()
 pygamer = True
+reader = [row for row in csv.reader(open("metadata.csv", "rb"))]
 while pygamer:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -33,71 +117,81 @@ while pygamer:
             print("load next picture")
             if (len(reader) > f_num):
                 pic = reader[f_num][0] #get file name
-                files[pic] = [reader[f_num][1],reader[f_num][2],reader[f_num][3],reader[f_num][4],] #build hash table
-                f_num += 1                
-                l_pic = pygame.image.load(pic) #load picture
+                files[user + pic] = [reader[f_num][1],reader[f_num][2],reader[f_num][3],reader[f_num][4],] #build hash table 
+                with open("filelist.txt", "a") as writer:                
+                    writer.write(user)              
+                    writer.write(pic)
+                    writer.write('\n')
+                    f_num += 1                
+                    l_pic = pygame.image.load(pic) #load picture
             else:
                 pygamer = False
             screen.fill(backGround)#clear screen                
             screen.blit(l_pic, (0,0)) #display picture
             pygame.display.flip()
             print(pic)
-        elif event.type == KEYDOWN and event.key == K_DOWN: #hit "f" to save front view
-            poslist_f.append(pic)
+        elif event.type == KEYDOWN and event.key == K_DOWN: #hit "down arrow" to save front view
+            poslist_f.append(user + pic) 
             print("Picture added")
-        elif event.type == KEYDOWN and event.key == K_UP: #hit "b" to save back view
-            poslist_b.append(pic)
+        elif event.type == KEYDOWN and event.key == K_UP: #hit "up arrow" to save back view
+            poslist_b.append(user + pic)
             print("Picture added")
-        elif event.type == KEYDOWN and event.key == K_LEFT: #hit "l" to save pointing left view
-            poslist_l.append(pic)
+        elif event.type == KEYDOWN and event.key == K_LEFT: #hit "left arrow" to save pointing left view
+            poslist_l.append(user + pic)
             print("Picture added")
-        elif event.type == KEYDOWN and event.key == K_RIGHT: #hit "r" to save pointing right view
-            poslist_r.append(pic)
+        elif event.type == KEYDOWN and event.key == K_RIGHT: #hit "right arrow" to save pointing right view
+            poslist_r.append(user + pic)
             print("Picture added")
         elif event.type == KEYDOWN and event.key == K_d: #hit "d" to finish marking
-            pygamer = False  
+            pygamer = False 
+writer.close() 
 ########################################################
 #create descriptor file
 ########################################################
-writer = open('positive_f.txt', 'w') #front view descriptor file
-for doc in poslist_f:
+ 
+for doc in poslist_f: #front view descriptor file
     dimensions = (files[doc])
-    writer.write(doc + ' ')
-    dimen = str(dimensions)
-    dimen = dimen.replace(",", "")
-    dimen = dimen.replace("'", "")
-    writer.write(dimen[1:-1])
-    writer.write('\n')
+    with open("positive_f.txt", "a") as writer:    
+        writer.write(doc + ' ')
+        dimen = str(dimensions)
+        dimen = dimen.replace(",", "")
+        dimen = dimen.replace("'", "")
+        writer.write(dimen[1:-1])
+        writer.write('\n')
+writer.close()
+ 
+for doc in poslist_b: #back view descriptor file
+    dimensions = (files[doc])
+    with open("positive_b.txt", "a") as writer:    
+        writer.write(doc + ' ')
+        dimen = str(dimensions)
+        dimen = dimen.replace(",", "")
+        dimen = dimen.replace("'", "")
+        writer.write(dimen[1:-1])
+        writer.write('\n')
+writer.close()
 
-writer = open('positive_b.txt', 'w') #back view descriptor file
-for doc in poslist_b:
+for doc in poslist_l: #pointing left view descriptor file
     dimensions = (files[doc])
-    writer.write(doc + ' ')
-    dimen = str(dimensions)
-    dimen = dimen.replace(",", "")
-    dimen = dimen.replace("'", "")
-    writer.write(dimen[1:-1])
-    writer.write('\n')
+    with open("positive_l.txt", "a") as writer:        
+        writer.write(doc + ' ')
+        dimen = str(dimensions)
+        dimen = dimen.replace(",", "")
+        dimen = dimen.replace("'", "")
+        writer.write(dimen[1:-1])
+        writer.write('\n')
+writer.close()
 
-writer = open('positive_l.txt', 'w') #pointing left view descriptor file
-for doc in poslist_l:
+for doc in poslist_r: #pointing right view descriptor file
     dimensions = (files[doc])
-    writer.write(doc + ' ')
-    dimen = str(dimensions)
-    dimen = dimen.replace(",", "")
-    dimen = dimen.replace("'", "")
-    writer.write(dimen[1:-1])
-    writer.write('\n')
-
-writer = open('positive_r.txt', 'w') #pointing right view descriptor file
-for doc in poslist_r:
-    dimensions = (files[doc])
-    writer.write(doc + ' ')
-    dimen = str(dimensions)
-    dimen = dimen.replace(",", "")
-    dimen = dimen.replace("'", "")
-    writer.write(dimen[1:-1])
-    writer.write('\n')
+    with open("positive_r.txt", "a") as writer:      
+        writer.write(doc + ' ')
+        dimen = str(dimensions)
+        dimen = dimen.replace(",", "")
+        dimen = dimen.replace("'", "")
+        writer.write(dimen[1:-1])
+        writer.write('\n')
+writer.close()
 
     
 
