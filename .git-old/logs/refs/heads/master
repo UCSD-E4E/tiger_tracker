@@ -1,0 +1,13 @@
+0000000000000000000000000000000000000000 cc8c473c2b7613ce10cc43c1d09b5db8a75baf6b jblackstone <senorblackstone@gmail.com> 1372429906 -0700	clone: from https://github.com/UCSD-E4E/tiger_tracker
+cc8c473c2b7613ce10cc43c1d09b5db8a75baf6b 9b81b56aeba2a26cbbc5189db7abd7460e9f6b38 jblackstone <senorblackstone@gmail.com> 1375208431 -0700	merge log-Riley: Fast-forward
+9b81b56aeba2a26cbbc5189db7abd7460e9f6b38 8eb7bd314bcfa6d57f0cbe89ef43c1784a930a1b jblackstone <senorblackstone@gmail.com> 1375208739 -0700	pull: Merge made by the 'recursive' strategy.
+8eb7bd314bcfa6d57f0cbe89ef43c1784a930a1b b6c9301a4437e6f046feb71b33768a01147bca26 jblackstone <senorblackstone@gmail.com> 1375211587 -0700	commit (merge): Merge branch 'log-Riley'
+b6c9301a4437e6f046feb71b33768a01147bca26 dda82f7112c50525f47f0960fc67637169c1d0a2 jblackstone <senorblackstone@gmail.com> 1375401311 -0700	commit: created object marking script
+dda82f7112c50525f47f0960fc67637169c1d0a2 c01999d6519ea2fd4d48251b5c14af50447f54e6 jblackstone <senorblackstone@gmail.com> 1375723412 -0700	commit: added files for training Tiger Haar Classifier
+c01999d6519ea2fd4d48251b5c14af50447f54e6 e0cf061c1018d7249e24e44e31510003c714bcfd jblackstone <senorblackstone@gmail.com> 1375723839 -0700	pull: Merge made by the 'recursive' strategy.
+e0cf061c1018d7249e24e44e31510003c714bcfd cb8b5bcdfb5b59194e488180ed40f17e274df635 jblackstone <senorblackstone@gmail.com> 1375746528 -0700	commit: add marker file
+cb8b5bcdfb5b59194e488180ed40f17e274df635 4acc7cdfe6dc8da965fbd37fbef88e7aea9dbcd5 jblackstone <senorblackstone@gmail.com> 1375746564 -0700	pull: Merge made by the 'recursive' strategy.
+4acc7cdfe6dc8da965fbd37fbef88e7aea9dbcd5 d75bd58a336346d1421f7b72b7732dfca1325e3b jblackstone <senorblackstone@gmail.com> 1375816656 -0700	commit: add save state, instructions and user identification to mark.py
+d75bd58a336346d1421f7b72b7732dfca1325e3b d8e09c6aa018beb62e9112a86913532a728fe941 jblackstone <senorblackstone@gmail.com> 1375822232 -0700	commit: moved user identification from mark.py to auto_segment.py
+d8e09c6aa018beb62e9112a86913532a728fe941 28e1bfd3f70f9039f9af9a7c695cfb227b83a73e jblackstone <senorblackstone@gmail.com> 1375827093 -0700	commit: add user identification to auto_segment.py
+28e1bfd3f70f9039f9af9a7c695cfb227b83a73e 9645a2e1b9670987d57873092649d827b8f9d83e jblackstone <senorblackstone@gmail.com> 1375834867 -0700	commit: add blur function

@@ -91,10 +91,10 @@ for images in glob.glob('./*.avi'):
         if (frame_ct == 0): 
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             print "Thresholding..." 
-            retvalue, img_thresh = cv2.threshold(img_gray, BRIGHTNESS, 255, cv2.THRESH_BINARY)
-            blurred = cv2.blur(img_thresh, (1,1))
-            #print img_thresh.__class__.__name__
-            retvalue, img_thresh2 = cv2.threshold(blurred, BRIGHTNESS, 255, cv2.THRESH_BINARY)
+            retvalue, img_thresh = cv2.threshold(img_gray, BRIGHTNESS, 255, cv2.THRESH_BINARY) #comment out for segmentBG
+            blurred = cv2.blur(img_thresh, (1,1)) #comment out for segmentBG
+            #img_thresh2 = bg_mog.apply(img_gray, None, 0.0001) #uncomment for segmentBG
+            retvalue, img_thresh2 = cv2.threshold(blurred, BRIGHTNESS, 255, cv2.THRESH_BINARY) #comment out for segmentBG
             cv2.imshow("Threshold", img_thresh2)
 
             contours, hierarchy = cv2.findContours(img_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
