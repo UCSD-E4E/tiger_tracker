@@ -18,7 +18,6 @@ cv2.namedWindow("Candidates")
 
 img_ct = 0;
 frame_ct = 0; 
-files = {} 
 
 pygame.init() #user identification
 size = width, height = 600, 400 
@@ -87,14 +86,16 @@ for images in glob.glob('./*.avi'):
     cap = cv2.VideoCapture(str(images))
     #get initial frame:
     f, img = cap.read() #read frames from video
-
     while (f == True):
         frame_ct = (frame_ct + 1) % FRAME_PERIOD
         if (frame_ct == 0): 
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             print "Thresholding..." 
-            img_thresh = bg_mog.apply(img_gray, None, 0.0001)
-            cv2.imshow("Threshold", img_thresh)
+            retvalue, img_thresh = cv2.threshold(img_gray, BRIGHTNESS, 255, cv2.THRESH_BINARY)
+            blurred = cv2.blur(img_thresh, (1,1))
+            #print img_thresh.__class__.__name__
+            retvalue, img_thresh2 = cv2.threshold(blurred, BRIGHTNESS, 255, cv2.THRESH_BINARY)
+            cv2.imshow("Threshold", img_thresh2)
 
             contours, hierarchy = cv2.findContours(img_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
 
