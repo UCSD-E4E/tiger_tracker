@@ -129,8 +129,7 @@ for doc in poslist_f: #front view descriptor file
         dimen = str(dimensions)
         dimen = dimen.replace(",", "")
         dimen = dimen.replace("'", "")
-        writer.write(dimen[:-1])
-        writer.write('\n')
+        writer.write(dimen[1:-1] + '\n')
 writer.close()
  
 for doc in poslist_b: #back view descriptor file
@@ -140,8 +139,7 @@ for doc in poslist_b: #back view descriptor file
         dimen = str(dimensions)
         dimen = dimen.replace(",", "")
         dimen = dimen.replace("'", "")
-        writer.write(dimen[:-1])
-        writer.write('\n')
+       	writer.write(dimen[1:-1] + '\n')
 writer.close()
 
 for doc in poslist_l: #pointing left view descriptor file
@@ -151,8 +149,7 @@ for doc in poslist_l: #pointing left view descriptor file
         dimen = str(dimensions)
         dimen = dimen.replace(",", "")
         dimen = dimen.replace("'", "")
-        writer.write(dimen[:-1])
-        writer.write('\n')
+	writer.write(dimen[1:-1] + '\n')
 writer.close()
 
 for doc in poslist_r: #pointing right view descriptor file
@@ -162,8 +159,7 @@ for doc in poslist_r: #pointing right view descriptor file
         dimen = str(dimensions)
         dimen = dimen.replace(",", "")
         dimen = dimen.replace("'", "")
-        writer.write(dimen[:-1])
-        writer.write('\n')
+        writer.write(dimen[1:-1] + '\n')
 writer.close()
 
     
