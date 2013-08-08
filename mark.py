@@ -82,7 +82,7 @@ for place in reader: #find save state
     f_num += 1
 reader.close()
 pygamer = True
-reader = [row for row in csv.reader(open("metadata.csv", "rb"))]
+reader = [row for row in csv.reader(open("meta.csv", "rb"))]
 while pygamer:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
