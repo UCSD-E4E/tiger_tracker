@@ -1,7 +1,8 @@
 /**
  * @file objectDetection.cpp
  * @author A. Huaman ( based in the classic facedetect.cpp in samples/c )
- * @brief A simplified version of facedetect.cpp, show how to load a cascade classifier and how to find objects (Face + eyes) in a video stream
+ * @brief A simplified version of facedetect.cpp, show how to load a 
+ * cascade classifier and how to find objects (Face + eyes) in a video stream
  */
 #include "opencv2/objdetect/objdetect.hpp"
 #include "opencv2/highgui/highgui.hpp"
@@ -23,7 +24,8 @@ using namespace cv;
 void detectAndDisplay( Mat frame );
 
 /** Global variables */
-//-- Note, either copy these two files from opencv/data/haarscascades to your current folder, or change these locations
+/*-- Note, either copy these two files from opencv/data/haarscascades to your 
+ * current folder, or change these locations*/
 string cascade_name = "cascade.xml";
 //string eyes_cascade_name = "haarcascade_eye_tree_eyeglasses.xml";
 CascadeClassifier cascade;
@@ -36,30 +38,53 @@ RNG rng(12345);
  */
 int main( void )
 {
-  CvCapture* capture;
-  Mat frame;
+    CvCapture* capture;
+    Mat frame;
 
-  //-- 1. Load the cascades
-  if( !cascade.load( cascade_name ) ){ printf("--(!)Error loading\n"); return -1; };
-  capture = cvCaptureFromAVI("wolf_test.avi");
-  if( capture )
-  {
-    for(;;)
+    Size frameSize =  Size(480, 320);
+
+    VideoWriter writer; 
+    writer.open("./classifier_output.avi", 
+                 CV_FOURCC('D', 'I', 'V', 'X'), 
+                 15., frameSize, true);
+    if (!writer.isOpened())
     {
-      frame = cv::cvarrToMat(cvQueryFrame( capture ));
-
-      //-- 3. Apply the classifier to the frame
-      if( !frame.empty() )
-       { detectAndDisplay( frame ); }
-      else
-       { printf(" --(!) No captured frame -- Break!"); break; }
-
-      int c = waitKey(10);
-      if( (char)c == 'c' ) { break; }
-
+        printf("Video writer is not open\n");
+        return -1;
     }
-  }
-  return 0;
+    //-- 1. Load the cascades
+    if (!cascade.load(cascade_name))
+    {
+        printf("--(!)Error loading\n"); 
+        return -1; 
+    };
+    capture = cvCaptureFromAVI("wolf_test.avi");
+    if( capture )
+    {
+        for(;;)
+        {
+            frame = cv::cvarrToMat(cvQueryFrame( capture ));
+
+            //-- 3. Apply the classifier to the frame
+            if (!frame.empty())
+            { 
+                detectAndDisplay( frame ); 
+            }
+            else
+            { 
+                printf(" --(!) No captured frame\n"); 
+                break; 
+            }
+            writer << frame;
+            int c = waitKey(10);
+            if ((char)c == 'c') 
+            { 
+                break; 
+            }
+
+        }
+    }
+    return 0;
 }
 
 /**
