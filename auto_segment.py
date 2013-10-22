@@ -69,7 +69,6 @@ while done == False and display_instructions:
         screen.blit(text, [10,170]) 
     clock.tick(20)
     pygame.display.flip() 
-bg_mog = cv2.BackgroundSubtractorMOG()
 
 def segmentBG(img_in, learn_rate):
     img_out = bg_mog.apply(img_gray, None, 0.0001)
@@ -84,6 +83,7 @@ writer = open(CAND_DIRECTORY + "meta.csv", 'w')
 #get images in directory
 for images in glob.glob('./*.avi'):
     cap = cv2.VideoCapture(str(images))
+    bg_mog = cv2.BackgroundSubtractorMOG()
     #get initial frame:
     f, img = cap.read() #read frames from video
     while (f == True):
@@ -91,13 +91,18 @@ for images in glob.glob('./*.avi'):
         if (frame_ct == 0): 
             img_gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
             print "Thresholding..." 
-            retvalue, img_thresh = cv2.threshold(img_gray, BRIGHTNESS, 255, cv2.THRESH_BINARY) #comment out for segmentBG
-            blurred = cv2.blur(img_thresh, (1,1)) #comment out for segmentBG
-            #img_thresh2 = bg_mog.apply(img_gray, None, 0.0001) #uncomment for segmentBG
-            retvalue, img_thresh2 = cv2.threshold(blurred, BRIGHTNESS, 255, cv2.THRESH_BINARY) #comment out for segmentBG
-            cv2.imshow("Threshold", img_thresh2)
-
-            contours, hierarchy = cv2.findContours(img_thresh, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE) 
+            #retvalue, img_thresh = cv2.threshold(img_gray, BRIGHTNESS, 255, 
+            #                    cv2.THRESH_BINARY) #comment out for segmentBG
+            #blurred = cv2.blur(img_thresh, (1,1)) #comment out for segmentBG
+            img_thresh = bg_mog.apply(img_gray, None, 0.01) 
+            #retvalue, img_thresh2 = cv2.threshold(blurred, BRIGHTNESS, 255, 
+            #                                       cv2.THRESH_BINARY) 
+            kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (10,10))
+            #img_thresh = cv2.morphologyEx(img_thresh, cv2.MORPH_CLOSE, kernel)
+            cv2.imshow("Threshold", img_thresh)
+            
+            contours, hierarchy = cv2.findContours(img_thresh, cv2.RETR_TREE, 
+                                                    cv2.CHAIN_APPROX_SIMPLE) 
 
             for i in range(0, len(contours)):
                 if(i % 2 == 0):
