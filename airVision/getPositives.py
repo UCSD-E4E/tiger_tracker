@@ -12,6 +12,7 @@ import os
 def checkClips(vid_dir, min_size, num_hits ):
   tiger_clip = []
   for clip in os.listdir(vid_dir):
+      clip = vid_dir + "/" + clip
       if (checkPos(clip, min_size,num_ hits) != -1):
           tiger_clip.append(clip)
   return tiger_clip
@@ -27,7 +28,7 @@ def checkPos(clip, min_size, num_hits):
     hits = 0
 
     # Open input clip for processing     
-    cap = cv2.VideoCapture.open(clip)
+    cap = cv2.VideoCapture(clip)
 
     if not cv2.VideoCapture.isOpened():
         print 'Could not open video file:', clip
@@ -58,6 +59,6 @@ def checkPos(clip, min_size, num_hits):
     if hits >= num_hits: 
         return clip
 
-
+checkClips(vid_dir, min_size, num_hits)
 
 ## EXIT
