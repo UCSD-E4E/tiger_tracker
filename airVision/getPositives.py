@@ -1,7 +1,10 @@
 from detection_module_tiger import TigerDetector
 import cv, cv2
-import fileinput
-import os
+
+
+vid_dir = 
+min_size = 500
+num_hits = 10
 
 
 # Description: Checks video files in passed directory for tiger hits 
@@ -28,37 +31,36 @@ def checkPos(clip, min_size, num_hits):
     hits = 0
 
     # Open input clip for processing     
-    cap = cv2.VideoCapture(clip)
+    cap = cv2.VideoCapture.open(str(clip))
 
-    if not cv2.VideoCapture.isOpened():
-        print 'Could not open video file:', clip
-        return -1 
-
-    detector = TigerDetector(min_size)
-  
-    while True:
-        frame = cap.read()
-  
-        # Check if end of clip 
-        if frame.empty():
-            break
+    opened = cap.isOpened()
+    print opened
     
-        # Pass video file to tiger detector
-        is_detected, coordinates = process_frame(frame)
-
-
-        # If is_detected = true && > 10 hits return file name     
-        if is_detected:
-            hits += 1
-
-        # Read next frame
-        cap.read()
-
-
-    # If more than 10-frame tiger sighting, print file path
-    if hits >= num_hits: 
-        return clip
+    if True:
+    #if cap.isOpened():
+        detector = TigerDetector(min_size)
+  
+        while True:
+            frame_capt, frame = cap.read()
+            
+            # Check if end of clip 
+            if frame.empty():
+                break
+       
+            if frame_capt: # If frame read success
+                # Pass video file to tiger detector
+                is_detected, coordinates = process_frame(frame)
+                if is_detected:
+                    hits += 1
+                # Read the next line
+                cap.read()
+            
+            if hits >= num_hits:
+               return clip
+    else:
+        print 'Could not open video file: ', clip
+        return -1
 
 checkClips(vid_dir, min_size, num_hits)
 
-## EXIT
+    
