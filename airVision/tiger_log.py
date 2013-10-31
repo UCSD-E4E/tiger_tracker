@@ -1,20 +1,36 @@
 import sqlite3
 
 
+
+def open_data_base():
+    connection = sqlite3.connect("tiger_log.db")
+    the_cursor = conn.cursor()
+    return connection, the_cursor
+
+
+def close_data_base(connection):
+    connection.commit()
+    connection.close()
+
+
 # Create--if one doesn't already exist--a sqlite
 # data_base for the tiger_log.
 def create_table():
-    conn = sqlite3.connect("tiger_log.db")
-    cursor = conn.cursor()
+    conn, cursor = open_data_base()
     cursor.execute("CREATE TABLE IF NOT EXISTS tiger_log (date, camera_id, processed, pos_frames)")
-    conn.commit()
-    conn.close()
+    close_data_base(conn)
 
+
+
+
+
+
+def add_many_rows(date_and_camera):
+    conn, cursor = open_data_base() 
 
 
 def add_row(date, camera_id):
-    conn = sqlite3.connect("tiger_log.db")
-    cursor = conn.cursor()
+    conn, cursor = open_data_base() 
     cursor.execute("INSERT OR IGNORE INTO tiger_log(date, camera_id, processed, pos_frames) values(1, 'prettylongassstringlikethisone',30000, 'prettylongassstringlikethisone')")
     conn.commit()
     conn.close()
