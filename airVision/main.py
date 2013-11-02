@@ -50,15 +50,16 @@ if len(need_processing) == 0:
 
 # pass the abs paths of our directory to the processor
 for item in need_processing:
+    print "Processing:",item[0]
     counts_and_dirs = getPositives.retClips(item[0],500, 10) # dir, min_size, hits
     for elements in counts_and_dirs:
-        tiger_count = elements[0]        
+        tiger_count = elements[0]
         abs_dir = elements[1]
         rel_name = abs_dir.partition(args.video_path)
         index_of_file_name = rel_name[0].rfind("segment")        
         new_dir = rel_name[0][0:index_of_file_name]
-        shutil.copy(abs_dir, args.saved_activity + index_of_file_name) 
-        tiger_log.update_pos_frames_by_dir(abs_dir, tiger_count)
+        shutil.copy(abs_dir, args.saved_activity + "/" + new_dir) 
+        tiger_log.update_pos_frames_by_dir(item[0], tiger_count)
 tiger_log.update_processed_by_dir(item[0], 'Y')
         
 

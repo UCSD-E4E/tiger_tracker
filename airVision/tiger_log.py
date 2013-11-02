@@ -94,7 +94,7 @@ def update_pos_frames(date, camera_id, num_pos):
 # num_pos: # of positive frames found for this entry
 def update_pos_frames_by_dir(abs_dir, num_pos):
     conn, cursor = open_data_base() 
-    cursor.execute("UPDATE tiger_log SET pos_frames = ? WHERE abs_path = ?",(num_pos, date, abs_dir))  
+    cursor.execute("UPDATE tiger_log SET pos_frames = ? WHERE abs_path = ?",(num_pos, abs_dir))  
     close_data_base(conn)
 
 
