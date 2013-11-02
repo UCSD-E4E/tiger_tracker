@@ -4,7 +4,7 @@ import video_retriever
 import tiger_log
 import getPositives
 import shutil
-
+import os
 
 def terminate_main():
     print "Exiting:",str(datetime.datetime.now())
@@ -55,7 +55,9 @@ for item in need_processing:
         tiger_count = elements[0]        
         abs_dir = elements[1]
         rel_name = abs_dir.partition(args.video_path)
-        shutil.copy(abs_dir, args.saved_activity + rel_name[1]) 
+        index_of_file_name = rel_name[0].rfind("segment")        
+        new_dir = rel_name[0][0:index_of_file_name]
+        shutil.copy(abs_dir, args.saved_activity + index_of_file_name) 
         tiger_log.update_pos_frames_by_dir(abs_dir, tiger_count)
 tiger_log.update_processed_by_dir(item[0], 'Y')
         
