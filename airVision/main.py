@@ -1,3 +1,5 @@
+#!/usr/local/bin/python 
+
 import argparse     
 import datetime
 import video_retriever
@@ -19,6 +21,7 @@ def terminate_main():
 parser = argparse.ArgumentParser(description='Process airVision security footage for activity.')
 parser.add_argument('video_path', help='Path to airVision Videos directory.')
 parser.add_argument('saved_activity', help='Path to directory to save active videos under.')
+
 args = parser.parse_args()  
 
 print "Processing airVision data at", args.video_path
@@ -62,7 +65,6 @@ for item in need_processing:
         tiger_log.update_pos_frames_by_dir(item[0], tiger_count)
 tiger_log.update_processed_by_dir(item[0], 'Y')
         
-
 terminate_main()
 
 
