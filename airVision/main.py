@@ -1,6 +1,14 @@
-import argparse
+import argparse     
 import datetime
 import video_retriever
+import tiger_log
+import getPositives
+import shutil
+
+
+def terminate_main():
+    print "Exiting:",str(datetime.datetime.now())
+    exit(0) 
 
 
 ################
@@ -10,21 +18,52 @@ import video_retriever
 # build the command-line parser, parse
 parser = argparse.ArgumentParser(description='Process airVision security footage for activity.')
 parser.add_argument('video_path', help='Path to airVision Videos directory.')
-parser.add_argument('processed_until', help='The relative path of the last video directory processed ( 2013/10/24/16 for example).')
+parser.add_argument('saved_activity', help='Path to directory to save active videos under.')
 args = parser.parse_args()  
 
-print "Processing Tiger activity from airVision data."
+print "Processing airVision data at", args.video_path
 print "Begin:",str(datetime.datetime.now())
    
 
-# get paths to all video containing folders
-abs_paths, rel_paths = video_retriever.grab_video_dirs(args.video_path)
+# grab the dates of the videos (2013/10/22/13), camera_ids, and absolut paths
+dates, camera_ids, abs_paths = video_retriever.grab_video_dirs(args.video_path)
 
-# determine the videos directories that need processing
-process_list = video_retriever.to_process(args.processed_until, abs_paths, rel_paths)
+if len(dates) != len(camera_ids):
+    print "The number of returned dates from the airVision directory, does not equal the number of camera_ids."
+    terminate_main()
+else:
+    date_cams_abspaths = zip(dates, camera_ids, abs_paths)
+
+
+# create the tiger_log table
+tiger_log.create_table()
+
+# update the rows in the table (adding any new
+tiger_log.insert_many_rows(date_cams_abspaths)
+
+# grab the abs_paths of the directories that need processing
+need_processing = tiger_log.select_unprocessed()
 
 # exit if there's nothing to process
-if len(process_list == 0):
-    print "Exiting:"str(datetime.datetime.now())
-    exit(0)
+if len(need_processing) == 0:
+    terminate_main()
+
+# pass the abs paths of our directory to the processor
+for item in need_processing:
+    counts_and_dirs = getPositives.retClips(item[0],500, 10) # dir, min_size, hits
+    for elements in counts_and_dirs:
+        tiger_count = elements[0]        
+        abs_dir = elements[1]
+        rel_name = abs_dir.partition(args.video_path)
+        shutil.copy(abs_dir, args.saved_activity + rel_name[1]) 
+        tiger_log.update_pos_frames_by_dir(abs_dir, tiger_count)
+tiger_log.update_processed_by_dir(item[0], 'Y')
+        
+
+terminate_main()
+
+
+
+
+    
     
