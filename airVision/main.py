@@ -32,7 +32,7 @@ print "Beginning processing at:",str(datetime.datetime.now())
 dates, camera_ids, abs_paths = video_retriever.grab_video_dirs(args.video_path)
 
 if len(dates) != len(camera_ids):
-    print "The number of returned dates from the airVision directory, does not equal the number of camera_ids."
+    print "The number of returned dates from the airVision directory, does not equal the number of camera_ids.  Exiting..."
     terminate_main()
 else:
     date_cams_abspaths = zip(dates, camera_ids, abs_paths)
@@ -52,7 +52,7 @@ need_processing = tiger_log.select_unprocessed()
 
 # exit if there's nothing to process
 if len(need_processing) == 0:
-    print "Nothing to process."    
+    print "Nothing to process..."    
     terminate_main()
 
 # pass the abs paths of our directory to the processor
