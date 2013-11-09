@@ -9,7 +9,7 @@ import shutil
 import os
 
 def terminate_main():
-    print "Exiting at",str(datetime.datetime.now())
+    print "\nExiting at:",str(datetime.datetime.now())
     exit(0) 
 
 
@@ -24,7 +24,8 @@ parser.add_argument('saved_activity', help='Path to directory to save active vid
 
 args = parser.parse_args()  
 
-print "\n\nProcessing airVision data at", args.video_path
+print "\nProcessing airVision data at:", args.video_path
+print "Saving positive footage at:", args.saved_activity
 print "Beginning processing at:",str(datetime.datetime.now())
    
 
@@ -40,7 +41,7 @@ else:
 # create the tiger_log table
 tiger_log.create_table()
 
-print "Updating the rows in the tiger_log.db table..."
+print "\nUpdating the rows in the tiger_log.db table..."
 
 # update the rows in the table--adding any newly discovered video directories
 tiger_log.insert_many_rows(date_cams_abspaths)

@@ -17,6 +17,7 @@ def close_data_base(connection):
 def create_table():
     conn, cursor = open_data_base()
     cursor.execute("CREATE TABLE IF NOT EXISTS tiger_log (date, camera_id, abs_path, processed, pos_frames)")
+    cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS date_cam_path ON tiger_log (date, camera_id, abs_path)")
     close_data_base(conn)
 
 
