@@ -52,7 +52,6 @@ def retClips(vid_path, min_size, num_hits):
 # if the video could not be opened
 def count_pos_frames(clip, min_size, num_hits, detector):
     hits = 0
-    more_frames = False   
     cap = cv2.VideoCapture(clip)
     if cap.isOpened():
         frame_capt, frame = cap.read()

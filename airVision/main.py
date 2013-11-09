@@ -9,7 +9,7 @@ import shutil
 import os
 
 def terminate_main():
-    print "Exiting:",str(datetime.datetime.now())
+    print "Exiting at",str(datetime.datetime.now())
     exit(0) 
 
 
@@ -24,8 +24,8 @@ parser.add_argument('saved_activity', help='Path to directory to save active vid
 
 args = parser.parse_args()  
 
-print "Processing airVision data at", args.video_path
-print "Begin:",str(datetime.datetime.now())
+print "\n\nProcessing airVision data at", args.video_path
+print "Beginning processing at:",str(datetime.datetime.now())
    
 
 # grab the dates of the videos (2013/10/22/13), camera_ids, and absolut paths
@@ -37,11 +37,12 @@ if len(dates) != len(camera_ids):
 else:
     date_cams_abspaths = zip(dates, camera_ids, abs_paths)
 
-
 # create the tiger_log table
 tiger_log.create_table()
 
-# update the rows in the table (adding any new
+print "Updating the rows in the tiger_log.db table."
+
+# update the rows in the table--adding any newly discovered video directories
 tiger_log.insert_many_rows(date_cams_abspaths)
 
 # grab the abs_paths of the directories that need processing
@@ -49,6 +50,7 @@ need_processing = tiger_log.select_unprocessed()
 
 # exit if there's nothing to process
 if len(need_processing) == 0:
+    print "Nothing to process."    
     terminate_main()
 
 # pass the abs paths of our directory to the processor
@@ -60,10 +62,10 @@ for item in need_processing:
         abs_dir = elements[1]
         rel_name = abs_dir.partition(args.video_path)
         index_of_file_name = rel_name[0].rfind("segment")        
-        new_dir = rel_name[0][0:index_of_file_name]
-        shutil.copy(abs_dir, args.saved_activity + "/" + new_dir) 
+        new_name = rel_name[0][0:index_of_file_name]
+        shutil.copy(abs_dir, args.saved_activity + "/" + new_name) 
         tiger_log.update_pos_frames_by_dir(item[0], tiger_count)
-tiger_log.update_processed_by_dir(item[0], 'Y')
+    tiger_log.update_processed_by_dir(item[0], 'Y')
         
 terminate_main()
 
