@@ -40,10 +40,12 @@ else:
 # create the tiger_log table
 tiger_log.create_table()
 
-print "Updating the rows in the tiger_log.db table."
+print "Updating the rows in the tiger_log.db table..."
 
 # update the rows in the table--adding any newly discovered video directories
 tiger_log.insert_many_rows(date_cams_abspaths)
+
+print "Selecting unprocessed rows from tiger_log.db table..."
 
 # grab the abs_paths of the directories that need processing
 need_processing = tiger_log.select_unprocessed()
