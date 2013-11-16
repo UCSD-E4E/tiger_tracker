@@ -38,3 +38,6 @@ rosserial/src/ros_lib/*.o
 # Ignore media files
 *.bmp
 *.avi
+
+*.pyc
+*.~
