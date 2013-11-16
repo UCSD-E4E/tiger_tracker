@@ -13,6 +13,21 @@ def terminate_main():
     exit(0) 
 
 
+# Copy a given file to a new directory--will create that
+# directory if it doesn't already exist.
+# Paramters: the absolute dir of the file to be copied,
+# the new directory for the copied file, 
+# the name for the new file.
+# Eg: abs_dir = /home/to_copy/copy_me
+# new_dir = /home/destination/
+# new_name = my_new_file
+def copy_file(abs_dir, new_dir, new_name):
+    if not os.path.exists(new_dir):
+        os.makedirs(new_dir)    
+    shutil.copy(abs_dir, new_dir + new_name) 
+
+
+
 ################
 # "Main":
 ################
@@ -21,7 +36,6 @@ def terminate_main():
 parser = argparse.ArgumentParser(description='Process airVision security footage for activity.')
 parser.add_argument('video_path', help='Path to airVision Videos directory.')
 parser.add_argument('saved_activity', help='Path to directory to save active videos under.')
-
 args = parser.parse_args()  
 
 print "\nProcessing airVision data at:", args.video_path
@@ -56,19 +70,24 @@ if len(need_processing) == 0:
     print "Nothing to process..."    
     terminate_main()
 
-# pass the abs paths of our directory to the processor
+# loop through all directories that need processing
 for item in need_processing:
-    print "Processing:",item[0]
+    print "Processing this directory:",item[0]
+    tiger_count = 0    
     counts_and_dirs = getPositives.retClips(item[0],500, 10) # dir, min_size, hits
+
+    # look at all clips that passed our # of positive hits threshold    
     for elements in counts_and_dirs:
-        tiger_count = elements[0]
-        abs_dir = elements[1]
-        rel_name = abs_dir.partition(args.video_path)
-        index_of_file_name = rel_name[0].rfind("segment")        
-        new_name = rel_name[0][0:index_of_file_name]
-        shutil.copy(abs_dir, args.saved_activity + "/" + new_name) 
-        tiger_log.update_pos_frames_by_dir(item[0], tiger_count)
+        tiger_count = tiger_count + elements[0]
+        abs_path = elements[1]
+        date_path, file_name = date_and_file_name(abs_path, args.video_path)
+        new_dir = args.saved_activity + "/" + date_path
+        copy_file(abs_path, new_dir, file_name)
+    
+    # update the table for this directory
     tiger_log.update_processed_by_dir(item[0], 'Y')
+    tiger_log.update_pos_frames_by_dir(item[0], tiger_count)        
+
         
 terminate_main()
 
