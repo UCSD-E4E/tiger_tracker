@@ -1,4 +1,6 @@
 #!/usr/local/bin/python 
+# -*- coding: UTF-8 -*-
+# ^ so we can print out "check" marks!
 
 import argparse     
 import datetime
@@ -10,6 +12,7 @@ import os
 
 def terminate_main():
     print "\nExiting at:",str(datetime.datetime.now())
+    print "\n------------------------------------------------------------"
     exit(0) 
 
 
@@ -24,7 +27,7 @@ def terminate_main():
 def copy_file(abs_dir, new_dir, new_name):
     if not os.path.exists(new_dir):
         os.makedirs(new_dir)    
-    shutil.copy(abs_dir, new_dir + new_name) 
+    shutil.copy(abs_dir, new_dir + "/" + new_name) 
 
 
 
@@ -38,6 +41,7 @@ parser.add_argument('video_path', help='Path to airVision Videos directory.')
 parser.add_argument('saved_activity', help='Path to directory to save active videos under.')
 args = parser.parse_args()  
 
+print "\n------------------------------------------------------------"
 print "\nProcessing airVision data at:", args.video_path
 print "Saving positive footage at:", args.saved_activity
 print "Beginning processing at:",str(datetime.datetime.now())
@@ -60,7 +64,7 @@ print "\nUpdating the rows in the tiger_log.db table..."
 # update the rows in the table--adding any newly discovered video directories
 tiger_log.insert_many_rows(date_cams_abspaths)
 
-print "Selecting unprocessed rows from tiger_log.db table..."
+print "Selecting unprocessed rows from tiger_log.db table...\n"
 
 # grab the abs_paths of the directories that need processing
 need_processing = tiger_log.select_unprocessed()
@@ -80,14 +84,14 @@ for item in need_processing:
     for elements in counts_and_dirs:
         tiger_count = tiger_count + elements[0]
         abs_path = elements[1]
-        date_path, file_name = date_and_file_name(abs_path, args.video_path)
+        date_path, file_name = video_retriever.date_and_file_name(abs_path, args.video_path)
         new_dir = args.saved_activity + "/" + date_path
         copy_file(abs_path, new_dir, file_name)
     
     # update the table for this directory
     tiger_log.update_processed_by_dir(item[0], 'Y')
-    tiger_log.update_pos_frames_by_dir(item[0], tiger_count)        
-
+    tiger_log.update_pos_frames_by_dir(item[0], tiger_count)
+    print '✓\n'
         
 terminate_main()
 
