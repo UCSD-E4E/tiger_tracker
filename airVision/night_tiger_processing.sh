@@ -49,7 +49,9 @@ export XDG_DATA_DIRS="/usr/share/ubuntu:/usr/share/gnome:/usr/local/share/:/usr/
 export XDG_SEAT_PATH="/org/freedesktop/DisplayManager/Seat0"
 export XDG_SESSION_COOKIE="e52a6e5097e89548b41e1db50000000f-1383418402.118729-392060290"
 export XDG_SESSION_PATH="/org/freedesktop/DisplayManager/Session0"
+
 cd /home/cameratrap/Desktop/tiger_tracker/airVision
+
 python main.py /usr/lib/airvision2/data/videos /media/zoodrive >> /home/cameratrap/Desktop/tiger_tracker/airVision/log.log
 
 #/bin/echo "Hello World" >> /home/cameratrap/cron.log
