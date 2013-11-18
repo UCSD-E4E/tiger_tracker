@@ -39,5 +39,8 @@ rosserial/src/ros_lib/*.o
 *.bmp
 *.avi
 
+# Ignore data base files 
+*.db
+
 *.pyc
 *.~

@@ -28,3 +28,20 @@ def grab_video_dirs(path):
     
     return video_dates, camera_ids, video_dirs_abs
 
+
+# Break up absolute path of an airvision video to the
+# the relative path that gives the cam_id and date, and the file
+# name.
+# Parameters: the absolute path to the video, and 
+# the location of the airvision Videos directory.
+# Return: The relative path that gives the cam id
+# and date (camera_id/2013/10/12/12)
+# and the file name of the video.
+def date_and_file_name(abs_path, airVision_videos):
+    abs_path_partition = abs_path.partition(airVision_videos)
+    rel_path = abs_path_partition[2].encode('ascii')
+    path_and_name = os.path.split(rel_path)
+    return path_and_name[0], path_and_name[1]
+
+
+
