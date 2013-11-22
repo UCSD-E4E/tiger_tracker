@@ -113,3 +113,15 @@ def select_unprocessed():
     close_data_base(conn)
     return unprocessed
 
+
+
+# Select the rows with corresponding passed dates
+# Return: the absolute paths of the files with corresponding 
+# dates
+def select_date(date):
+    conn, cursor = open_data_base()
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT abs_path FROM tiger_log WHERE date=?", date)
+    dated = cursor.fetchall()
+    close_data_base()
+    return dated
