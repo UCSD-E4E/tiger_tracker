@@ -43,7 +43,7 @@ class AirVision_Viewer:
         if self.current_frame < self.total_frames:
             return True
         else:
-            self.cap.release()
+            self.cap.release() # nothing left to see in this current capture object
             return False
 
     # next_frame_available()'s return must be checked before
