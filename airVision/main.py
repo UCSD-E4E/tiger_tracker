@@ -76,9 +76,10 @@ if len(need_processing) == 0:
 
 # loop through all directories that need processing
 for item in need_processing:
-    print "Processing this directory:",item[0]
+    currently_processing = item[0]
+    print "Processing this directory:",currently_processing
     tiger_count = 0    
-    counts_and_dirs = getPositives.retClips(item[0],500, 10) # dir, min_size, hits
+    counts_and_dirs = getPositives.retClips(currently_processing,500, 10) # dir, min_size, hits
 
     # look at all clips that passed our # of positive hits threshold    
     for elements in counts_and_dirs:
@@ -87,10 +88,11 @@ for item in need_processing:
         date_path, file_name = video_retriever.date_and_file_name(abs_path, args.video_path)
         new_dir = args.saved_activity + "/" + date_path
         copy_file(abs_path, new_dir, file_name)
+        tiger_log.update_savedat_by_dir(currently_processing, new_dir) # now we know where pos footage was saved at
     
     # update the table for this directory
-    tiger_log.update_processed_by_dir(item[0], 'Y')
-    tiger_log.update_pos_frames_by_dir(item[0], tiger_count)
+    tiger_log.update_processed_by_dir(currently_processing, 'Y')
+    tiger_log.update_pos_frames_by_dir(currently_processing, tiger_count)
     print '✓\n'
         
 terminate_main()
