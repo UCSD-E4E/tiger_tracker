@@ -1,69 +1,105 @@
-#!/usr/bin/python
-
-import tiger_log as log
-import subprocess
-import sqlite3
-import argparse
-import datetime
-import cv, cv2
+from dateutil import parser
+import tiger_log
 
 
-def process_date(date):
-   try:
-        date = datetime.datetime.strptime(date,"%Y/%m/%d/%H")
-        return True
-   except ValueError:
-        return False
+def terminate_main():
+    print "\nExiting..."
+    exit(0) 
 
-
-def prompt_date():
-    # Prompt for date
-    date = raw_input("\nPlease enter a date-time to be searched (yyyy/mm/dd/hh): ")
-    while (True):
-        processed = process_date(date)
-        if (processed):
-           print 'Searching date-time: ', date
-           return date
+# Prompt user for a yes or no response.
+# Paramters: the Prompt to print with a Y/N response.
+# Return: True on Y.  False on N.
+def yes_or_no(message):
+    while True:
+        response = raw_input(message + " [Y/N]: ")
+        if response == 'Y' or response == 'y':
+            return True
+        elif response == 'N' or response == 'n':
+            return False
         else:
-           date = raw_input("\nError processing date-time. Please re-enter date-time to be searched (yyyy/mm/dd/hh): ")       
+            print "Oops.  We need a Yes (Y) or No (N) answer."
+   
+
+# Prompt the user for a time, return
+# their raw input.  
+def grab_time_from_user():
+    input_time = raw_input("\nEnter the date and time you'd like to view footage from: ")
+    return input_time
+
+
+# Is a given time parsable.
+# Returns True if it is parsable.  False otherwise.
+def is_parsable(input_time):
+    try:    
+        their_time = parser.parse(input_time)
+    except:
+        print "Woops, had trouble understanding your time. Let's try again." 
+        return False 
+    return True
+
+
+# Parse a time string with the dateutil parser.
+# Return that parsed time.
+def parse_time(input_time):
+    their_time = parser.parse(input_time)
+    return their_time
 
 
 
+# Loop until a valid time is inputted.
+# Return that valid time.
+def get_valid_time():
+    valid_time = False
+    while valid_time == False:
+        input_time = grab_time_from_user()
+        valid_time = is_parsable(input_time)
+    return input_time
 
 
-date = prompt_date()
-
-try:
-    print '\nOpening database to retrieve paths'
-    tiger_db, cursor = log.open_data_base()    
-    print 'Database opened successfully'
-
-    print '\nSelecting files from date-time: ', date    
-    dated = log.select_date(date)
-    print dated
-
-    print '\nClosing database'
-    log.close_data_base(tiger_db)
-    print 'Database closed successfully'
-
-except sqlite3.Error, e:
-    print "Error %s:" % e.args[0]
-    sys.exit(1)
+# Loop until a valid time is given and accepted.
+# Return that valid time, parsed.  
+def ask_for_time():
+    accepted_time = False
+    while accepted_time == False:
+        time = get_valid_time()
+        parsed_time = parse_time(time)
+        accepted_time = yes_or_no("Is " + str(parsed_time) + " the time you'd like?")
+    return parsed_time
 
 
-# Write date paths to vid_paths.txt
-for path in dated:
-    with open(vid_paths.txt, 'w') as output:
-        output.write('file '+ path + '\n')    
-
-
-# Stitch toegether positve frames using ffmpeg
-print '\nRunning compile_list.sh'
-subprocess.call("./compile_list.sh", shell=True)
-print 'Sucessful.'
-
-
-# Return stitched videos and play in viewer
+# Format the given input time.
+# Return the formatted time string.
+def format_time(time):
+    return time.strftime("%Y/%m/%d/%H")
 
 
 
+################
+# "Main":
+################
+
+print "\n\nWelcome to the results viewer for the camera system in the tiger enclosure."
+print "We can retrieve all the tiger-positive footage from a given hour on a given day for you."
+
+continue_looping = True
+while continue_looping:
+    # get a valid time from the user   
+    parsed_time = ask_for_time()
+
+    # format the time so it matches tiger_log: YYYY/MM/DD/HH
+    formatted_time = format_time(parsed_time)
+
+
+
+    ################
+    # Select the appropriate directories from tiger_log, display videos for user, kill the
+    # videos when user is done.  
+    ################
+
+
+
+    continue_looping = yes_or_no("\nWould you like to look at another set of videos?")
+
+
+# Exit
+terminate_main()
