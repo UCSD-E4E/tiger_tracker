@@ -15,6 +15,9 @@ def tryint(s):
         return s
     
 def alphanum_key(s):
+    # if given a tuple, sort on the first element    
+    if len(s) > 1:
+        s = s[0]
     return [ tryint(c) for c in re.split('([0-9]+)',s) ]
 
 def sort_nicely(l):
