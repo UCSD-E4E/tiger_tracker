@@ -24,6 +24,7 @@ def log_message(to_log, file_name, verbose_arg):
         print to_log
 
 
+
 def terminate_main(log_file, verbose):
     log_message("\n\nExiting at: " + str(datetime.datetime.now()), log_file, verbose)
     log_message("\n------------------------------------------------------------", log_file, verbose)
@@ -45,6 +46,38 @@ def copy_file(abs_dir, new_dir, new_name):
 
 
 
+# Given the zipped list of dates, camera ids, and absolute paths,
+# remove all the entries with the most recent date.
+# Parameters: date_cams_abspaths--zipped list of dates, cam ids, and
+# absolute paths.  is_forced--ignore the dates, return an unshortened
+# list
+# Return: date_cams_abspaths with the most recent entries removed
+# if is_forced == False.  An unmodified date_cams_abspaths otherwise.
+def remove_most_recent(date_cams_abspaths, is_forced, log_file, verbose):
+    if is_forced == False:  
+        log_message("\nRemoving the most recent directories from processing (they're possibly still recording):", log_file, verbose)
+        
+        # sort by date
+        getPositives.sort_nicely(date_cams_abspaths) 
+    
+        # remove whatever is most recent
+        dont_process = date_cams_abspaths[-1][0]  
+        to_remove = [] 
+        counter = len(date_cams_abspaths) - 1
+        for element in reversed(date_cams_abspaths):
+            if element[0] == dont_process:
+                to_remove.append(counter)
+            else:
+                break
+            counter = counter - 1
+        for element in to_remove:
+            # print the abs path we're removing
+            log_message("\n..." + date_cams_abspaths[element][2], log_file, verbose)
+            date_cams_abspaths.pop(element)
+    return date_cams_abspaths
+
+
+
 ################
 # "Main":
 ################
@@ -55,7 +88,10 @@ parser.add_argument('video_path', help='Path to airVision Videos directory.')
 parser.add_argument('saved_activity', help='Path to directory to save active videos under.')
 parser.add_argument('log_file', help='File to put logging messages in.')
 parser.add_argument('--verbose', action='store_true', help='If verbose is given, logging messages will be printed to stdout.')
+parser.add_argument('--force', action='store_true', help="The logger usually does not process the most recently recorded video directories so as to avoid 'finishing' processsing on a directory that still may be recording footage.  --force forces the logger to process ALL discovered directories. [--force is useful if recording has stopped indefinitely.]")
 args = parser.parse_args()  
+
+
 
 log_message("\n\n\n------------------------------------------------------------", args.log_file, args.verbose)
 log_message("\nBeginning: " + str(datetime.datetime.now()), args.log_file, args.verbose)
@@ -71,6 +107,10 @@ if len(dates) != len(camera_ids):
     terminate_main(args.log_file, args.verbose)
 else:
     date_cams_abspaths = zip(dates, camera_ids, abs_paths)
+
+
+# remove the most recent directores 
+date_cams_abspaths = remove_most_recent(date_cams_abspaths, args.force, args.log_file, args.verbose)
 
 # create the tiger_log table
 tiger_log.create_table()
