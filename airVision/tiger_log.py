@@ -1,3 +1,5 @@
+# sqlite database for processing airVision footage.
+
 import sqlite3
 
 
@@ -16,7 +18,7 @@ def close_data_base(connection):
 # data_base for the tiger_log.
 def create_table():
     conn, cursor = open_data_base()
-    cursor.execute("CREATE TABLE IF NOT EXISTS tiger_log (date, camera_id, abs_path, processed, pos_frames)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS tiger_log (date, camera_id, abs_path, processed, pos_frames, saved_at)")
     cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS date_cam_path ON tiger_log (date, camera_id, abs_path)")
     close_data_base(conn)
 
@@ -99,6 +101,15 @@ def update_pos_frames_by_dir(abs_dir, num_pos):
     close_data_base(conn)
 
 
+# Update the directory where positive footage
+# for a particular camera at a given abs directory
+# Parameters: abs directory of the video files
+# positive_dir: dir where positive footage is saved
+def update_savedat_by_dir(abs_dir, positive_dir):
+    conn, cursor = open_data_base() 
+    cursor.execute("UPDATE tiger_log SET saved_at = ? WHERE abs_path = ?",(positive_dir, abs_dir))    
+    close_data_base(conn)
+
 
 
 # Select the rows that are unprocessed (the processed column
@@ -112,4 +123,19 @@ def select_unprocessed():
     unprocessed = cursor.fetchall()
     close_data_base(conn)
     return unprocessed
+
+
+
+# Select the rows with corresponding passed in dates
+# Return: the path to their positive footage
+# positive footage (possibly none)
+def select_date(date):
+    conn, cursor = open_data_base()
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT saved_at FROM tiger_log WHERE date = ?", [date])
+    dated = cursor.fetchall()
+    close_data_base(conn)
+    return dated
+
+
 
