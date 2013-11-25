@@ -94,11 +94,15 @@ while continue_looping:
     ################
     # Select the appropriate directories from tiger_log, display videos for user, kill the
     # videos when user is done.  
+    # 
+    # os.system("vlc path/to/video.video")
+    # os.system("vlc other/path/to/video.video")
+    # os.system("killall vlc")
     ################
 
 
 
-    continue_looping = yes_or_no("\nWould you like to look at another set of videos?")
+    continue_looping = yes_or_no("\nWould you like to look at another set of videos?  This will exit the videos you currently have up.")
 
 
 # Exit
