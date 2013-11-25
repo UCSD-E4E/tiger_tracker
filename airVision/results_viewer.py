@@ -107,6 +107,3 @@ while continue_looping:
 
 # Exit
 terminate_main()
-
-
-
