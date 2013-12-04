@@ -1,6 +1,6 @@
 #!/usr/local/bin/python 
 # -*- coding: UTF-8 -*-
-# ^ so we can print out "check" marks!
+# ^ so we can print out "check" marks!  ✓
 
 import argparse     
 import datetime
@@ -47,33 +47,38 @@ def copy_file(abs_dir, new_dir, new_name):
 
 
 # Given the zipped list of dates, camera ids, and absolute paths,
-# remove all the entries with the most recent date.
+# remove all the entries with the X most recent dates where X
+# is an argument.
 # Parameters: date_cams_abspaths--zipped list of dates, cam ids, and
-# absolute paths.  is_forced--ignore the dates, return an unshortened
-# list
-# Return: date_cams_abspaths with the most recent entries removed
-# if is_forced == False.  An unmodified date_cams_abspaths otherwise.
-def remove_most_recent(date_cams_abspaths, is_forced, log_file, verbose):
-    if is_forced == False:  
-        log_message("\nRemoving the most recent directories from processing (they're possibly still recording):", log_file, verbose)
+# absolute paths.  most_recent_num--how many of the most recent dates to remove 
+# (only the most recent date?  the 2 most recent? ...)
+# Return: date_cams_abspaths with the 'most_recent_num' most recent entries removed
+def remove_most_recent(date_cams_abspaths, most_recent_num, log_file, verbose):
+    log_message("\nRemoving the most recent directories from processing (they're possibly still recording):", log_file, verbose)
         
-        # sort by date
-        getPositives.sort_nicely(date_cams_abspaths) 
+    # sort by date
+    getPositives.sort_nicely(date_cams_abspaths) 
     
-        # remove whatever is most recent
-        dont_process = date_cams_abspaths[-1][0]  
-        to_remove = [] 
-        counter = len(date_cams_abspaths) - 1
-        for element in reversed(date_cams_abspaths):
-            if element[0] == dont_process:
-                to_remove.append(counter)
+    # remove whatever is most recent
+    dont_process = date_cams_abspaths[-1][0]  
+    to_remove = []
+    current = 1  # keep track of how many "most recent" dates we've removed     
+    back_counter = len(date_cams_abspaths) - 1  # the index we're at in the list
+    for element in reversed(date_cams_abspaths):
+        if element[0] == dont_process:
+            to_remove.append(back_counter)
+        else:
+            if current < most_recent_num:
+                dont_process = element[0]
+                to_remove.append(back_counter)
+                current = current + 1
             else:
                 break
-            counter = counter - 1
-        for element in to_remove:
-            # print the abs path we're removing
-            log_message("\n..." + date_cams_abspaths[element][2], log_file, verbose)
-            date_cams_abspaths.pop(element)
+        back_counter = back_counter - 1
+    for element in to_remove:
+        # print the abs path we're removing
+        log_message("\n..." + date_cams_abspaths[element][2], log_file, verbose)
+        date_cams_abspaths.pop(element)
     return date_cams_abspaths
 
 
@@ -109,8 +114,12 @@ else:
     date_cams_abspaths = zip(dates, camera_ids, abs_paths)
 
 
-# remove the most recent directores 
-date_cams_abspaths = remove_most_recent(date_cams_abspaths, args.force, args.log_file, args.verbose)
+if args.force == False:
+    # remove the directories with the 2 most recent dates from processing 
+    date_cams_abspaths = remove_most_recent(date_cams_abspaths, 3, args.log_file, args.verbose)
+else:
+    log_message("\nForced argument given.  Processing all directories regardless of how recent they are.", args.log_file, args.verbose)
+
 
 # create the tiger_log table
 tiger_log.create_table()
