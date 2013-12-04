@@ -73,7 +73,8 @@ def count_pos_frames(clip, min_size, num_hits, detector, viewer):
     if is_opened:
         while viewer.next_frame_available():
             frame = viewer.next_frame()
-            is_detected, coordinates = detector.process_frame(frame)
+            if frame != None:
+                is_detected, coordinates = detector.process_frame(frame)
             if is_detected == True:
                 hits = hits + 1
     else:

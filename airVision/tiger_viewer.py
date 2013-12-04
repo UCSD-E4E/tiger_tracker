@@ -42,6 +42,10 @@ def prompt_date():
 
 # Prompt the user for date input:
 date = prompt_date()
+<<<<<<< HEAD
+=======
+
+>>>>>>> b7bb1e4d11be43b8edbe604697ceaf64ac273137
 # Retrieve the appropriate files from tiger_log.db
 try:
     print '\nOpening database to retrieve paths'
@@ -55,23 +59,41 @@ try:
     print '\nClosing database'
     log.close_data_base(tiger_db)
     print 'Database closed successfully'
+<<<<<<< HEAD
+=======
+    
+>>>>>>> b7bb1e4d11be43b8edbe604697ceaf64ac273137
 except sqlite3.Error, e:
     print "Error %s:" % e.args[0]
     sys.exit(1)
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b7bb1e4d11be43b8edbe604697ceaf64ac273137
 # Write date paths to vid_paths.txt
 for path in dated:
     with open("vid_paths.txt", 'a') as output:
         output.write('file '+ path + '\n')    
 
 
+<<<<<<< HEAD
 # Stitch toegether positve frames using ffmpeg
 print '\nRunning compile_vid.sh'
+=======
+
+# Stitch together positve frames using ffmpeg
+print '\nRunning compile_vids.sh'
+>>>>>>> b7bb1e4d11be43b8edbe604697ceaf64ac273137
 subprocess.call("sh compile_vid.sh", shell=True)
 print 'Sucessful.'
 
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> b7bb1e4d11be43b8edbe604697ceaf64ac273137
 vlc_path = '/usr/bin/vlc'
 vid_path =                # path of output.ts created in compile_vid.sh
 
