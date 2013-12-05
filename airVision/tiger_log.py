@@ -138,6 +138,18 @@ def select_date(date):
     return dated
 
 
+# Select the rows that have saved positive footage.
+# Return: all the dates that have positive footage saved.
+def select_dates_with_pos_footage():
+    conn, cursor = open_data_base()
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT date FROM tiger_log WHERE saved_at IS NOT null OR saved_at != ''")
+    dates = cursor.fetchall()
+    close_data_base(conn)
+    return dates
+
+
+
 
 
   
