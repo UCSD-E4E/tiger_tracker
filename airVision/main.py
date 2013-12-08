@@ -9,6 +9,28 @@ import tiger_log
 import getPositives
 import shutil
 import os
+import fcntl
+import sys
+
+
+######################################
+# Global variables...
+lock_file_handle_global = None
+######################################
+
+
+# Determine if another instance of this script is running.
+# Parameters: path to the file that should be locked
+# Return: True if another instance is running.  False otherwise.
+def file_is_locked(file_path):
+    global lock_file_handle_global
+    lock_file_handle_global = open(file_path, 'w')
+    try:
+        fcntl.lockf(lock_file_handle_global, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        return False
+    except IOError:
+        # another instance is running
+        return True
 
 
 
@@ -87,6 +109,16 @@ def remove_most_recent(date_cams_abspaths, most_recent_num, log_file, verbose):
 # "Main":
 ################
 
+# Detemine if another instance of this script is already running
+lock_file_path = '/var/lock/air_vision_processor.py'
+
+# Exit if another instance is already running
+if file_is_locked(lock_file_path):
+    print 'Another instance is running. Exiting now.'
+    sys.exit(0)
+
+
+
 # build the command-line parser, parse
 parser = argparse.ArgumentParser(description='Process airVision security footage for activity.')
 parser.add_argument('video_path', help='Path to airVision Videos directory.')
@@ -102,8 +134,7 @@ log_message("\n\n\n------------------------------------------------------------"
 log_message("\nBeginning: " + str(datetime.datetime.now()), args.log_file, args.verbose)
 log_message("\nProcessing airVision data at: " + args.video_path, args.log_file, args.verbose)
 log_message("\nSaving positive footage at: " + args.saved_activity, args.log_file, args.verbose)
-   
-
+  
 # grab the dates of the videos (2013/10/22/13), camera_ids, and absolut paths
 dates, camera_ids, abs_paths = video_retriever.grab_video_dirs(args.video_path)
 
@@ -116,7 +147,7 @@ else:
 
 if args.force == False:
     # remove the directories with the 2 most recent dates from processing 
-    date_cams_abspaths = remove_most_recent(date_cams_abspaths, 3, args.log_file, args.verbose)
+    date_cams_abspaths = remove_most_recent(date_cams_abspaths, 2, args.log_file, args.verbose)
 else:
     log_message("\nForced argument given.  Processing all directories regardless of how recent they are.", args.log_file, args.verbose)
 
