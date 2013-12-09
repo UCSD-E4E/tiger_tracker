@@ -158,10 +158,7 @@ def get_and_sort(directory):
     sort_nicely(all_files) # put the video clips in temporal order
     return all_files
 
-
-def write_to_file(to_write):
-    with open("vid_paths.txt", 'a') as output:
-        output.write('file '+ path + '\n')    
+  
 
 
 
