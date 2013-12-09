@@ -182,7 +182,7 @@ def select_dates_with_pos_footage():
 
 # Select the rows that have saved positive footage.
 # Return: all the directories that have positive footage saved.
-def select_dates_with_pos_footage():
+def select_dirs_with_pos_footage():
     conn, cursor = open_data_base()
     conn.row_factory = sqlite3.Row
     cursor.execute("SELECT saved_at FROM tiger_log WHERE saved_at IS NOT null OR saved_at != ''")
