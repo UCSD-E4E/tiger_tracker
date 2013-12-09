@@ -18,7 +18,7 @@ def close_data_base(connection):
 # data_base for the tiger_log.
 def create_table():
     conn, cursor = open_data_base()
-    cursor.execute("CREATE TABLE IF NOT EXISTS tiger_log (date, camera_id, abs_path, processed, pos_frames, saved_at)")
+    cursor.execute("CREATE TABLE IF NOT EXISTS tiger_log (date, camera_id, abs_path, processed, pos_frames, saved_at, concatenated)")
     cursor.execute("CREATE UNIQUE INDEX IF NOT EXISTS date_cam_path ON tiger_log (date, camera_id, abs_path)")
     close_data_base(conn)
 
@@ -111,6 +111,24 @@ def update_savedat_by_dir(abs_dir, positive_dir):
     close_data_base(conn)
 
 
+# Update the Y/N concatenated field for a 
+# particular camera at a given date (update 1 row)
+# Parameters: abs_dir
+# processed: Y = is processed, N = is NOT processed
+# Return: True on success, False on failure
+def update_concatenated_by_dir(abs_dir, processed):
+    if processed == "Y" or processed == "N":
+        conn, cursor = open_data_base() 
+        cursor.execute("UPDATE tiger_log SET concatenated = ? WHERE abs_path = ?",(processed, abs_dir))  
+        close_data_base(conn)
+        return True
+    else:
+        print "The processed field must be Y/N."
+        return False
+
+
+
+
 
 # Select the rows that are unprocessed (the processed column
 # is not marked, or marked no.)
@@ -123,6 +141,19 @@ def select_unprocessed():
     unprocessed = cursor.fetchall()
     close_data_base(conn)
     return unprocessed
+
+
+# Select the rows that are processed (the processed column
+# is marked 'Y'.) and not concatenated.
+# Return: a tuple of tuples. Each of the inner tuples 
+# represent a row in the table (contains the abs_paths)
+def select_processed_not_concatenated():
+    conn, cursor = open_data_base() 
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT abs_path FROM tiger_log WHERE processed = 'Y' AND concatenated IS NULL OR concatenated = ''")
+    processed = cursor.fetchall()
+    close_data_base(conn)
+    return processed
 
 
 
@@ -147,12 +178,6 @@ def select_dates_with_pos_footage():
     dates = cursor.fetchall()
     close_data_base(conn)
     return dates
-
-
-
-
-
-  
 
 
 
