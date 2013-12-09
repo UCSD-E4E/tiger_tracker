@@ -193,15 +193,15 @@ while continue_looping:
         exit_choice()  # give user option of exiting
         continue
 
-    print "Fetching the " + len(videos) " available videos at this date.  1 for each angle."
+    print "\nFetching the " + str(len(videos)) + " available angles at this date."
 
     # start vlc windows for all videos
     count = 1
     for item in videos:
-        print "Fetching video from angle number " + count + "..."
+        print "Fetching video from angle number " + str(count) + "..."
         abs_path = "".join(item)
         video_file = os.listdir(abs_path)
-        final_path = abs_path + "/" + video_file
+        final_path = abs_path + "/" + "".join(video_file)
         vlc_cmd = "vlc " + " --quiet " + final_path + " > /dev/null 2> /dev/null" + " &"
         os.system(vlc_cmd)
         count = count + 1
