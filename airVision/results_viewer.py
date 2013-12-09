@@ -112,7 +112,7 @@ def format_time(time):
 # footage.  Sort them, and return that sorted list.
 def sort_available_dates():
     to_sort = []    
-    all_dates = tiger_log.select_dates_with_pos_footage()
+    all_dates = tiger_log.select_dates_with_concatenated_footage()
     for item in all_dates:
         to_sort.append("".join(item))
     to_sort.sort()
@@ -184,7 +184,7 @@ while continue_looping:
     formatted_time = format_time(parsed_time)
 
     # grab rows in the database that have the corresponding time
-    videos = tiger_log.select_date(formatted_time)
+    videos = tiger_log.select_dirs_with_concatenated_footage(formatted_time)
     
     # make sure we have videos before continuing through this code
     if len(videos) == 0:
@@ -193,13 +193,18 @@ while continue_looping:
         exit_choice()  # give user option of exiting
         continue
 
+    print "Fetching the " + len(videos) " available videos at this date.  1 for each angle."
 
     # start vlc windows for all videos
+    count = 1
     for item in videos:
+        print "Fetching video from angle number " + count + "..."
         abs_path = "".join(item)
-        get_and_sort(abs_path)
-        vlc_cmd = "vlc " + " --quiet " + abs_path + " > /dev/null 2> /dev/null" + " &"
+        video_file = os.listdir(abs_path)
+        final_path = abs_path + "/" + video_file
+        vlc_cmd = "vlc " + " --quiet " + final_path + " > /dev/null 2> /dev/null" + " &"
         os.system(vlc_cmd)
+        count = count + 1
 
     continue_looping = yes_or_no("\nWould you like to look at another set of videos?  Answering this question will exit the videos you currently have up.")
     os.system("killall vlc")
