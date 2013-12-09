@@ -1,10 +1,45 @@
 from dateutil import parser
 import tiger_log
-
+import os
+import re
 
 def terminate_main():
     print "\nExiting..."
     exit(0) 
+
+
+# Delete the directory with the passed in name. 
+    def delete_directory(self, name):
+        try:    
+            shutil.rmtree(name)
+        except Exception, e:
+            print e
+
+# Make a directory with the given name, if it doesn't
+# already exist.
+def make_directory(name):
+    if not os.path.exists(dir_name):
+        os.makedirs(dir_name)  
+
+
+##############################################
+# Sort alphanumerically
+def tryint(s):
+    try:
+        return int(s)
+    except:
+        return s
+    
+def alphanum_key(s):
+    return [ tryint(c) for c in re.split('([0-9]+)',s) ]
+
+def sort_nicely(l):
+    l.sort(key=alphanum_key)
+##############################################
+
+
+
+
 
 # Prompt user for a yes or no response.
 # Paramters: the Prompt to print with a Y/N response.
@@ -73,13 +108,72 @@ def format_time(time):
     return time.strftime("%Y/%m/%d/%H")
 
 
+# Query tiger_log for all dates with saved positive 
+# footage.  Sort them, and return that sorted list.
+def sort_available_dates():
+    to_sort = []    
+    all_dates = tiger_log.select_dates_with_pos_footage()
+    for item in all_dates:
+        to_sort.append("".join(item))
+    to_sort.sort()
+    return to_sort
+    
 
-################
+# Take a list of sorted dates, and print them out
+# not printing any duplicate dates.
+def print_sorted_dates(to_print):
+    if len(to_print) == 0:
+        print "Woops, no footage available..."        
+        return       
+    else:   
+        # print the dates, skipping duplicates 
+        current = to_print[0]
+        print current
+        for item in to_print:
+            if item != current:
+                print item
+                current = item
+
+
+# Give user option of viewing available dates.
+def view_available_dates():
+    to_print = yes_or_no("\nWould you like to see what dates are available for viewing?")
+    if to_print:
+        sorted_dates = sort_available_dates()
+        print_sorted_dates(sorted_dates)
+        
+
+# Give user option of exiting.
+def exit_choice():
+    to_exit = yes_or_no("\nWould you like to continue? (Say 'N' if you want to exit).")
+    if to_exit == False:
+        terminate_main()
+
+
+# Get all files from the given directory.
+# Sort them alphanumerically (to put the videos
+# in temporal order.
+def get_and_sort(directory):
+    all_files = os.listdir(directory)
+    sort_nicely(all_files) # put the video clips in temporal order
+    return all_files
+
+  
+
+
+
+
+################################################
 # "Main":
-################
+################################################
+
 
 print "\n\nWelcome to the results viewer for the camera system in the tiger enclosure."
 print "We can retrieve all the tiger-positive footage from a given hour on a given day for you."
+
+# give user option of viewing available dates
+view_available_dates()
+
 
 continue_looping = True
 while continue_looping:
@@ -89,21 +183,34 @@ while continue_looping:
     # format the time so it matches tiger_log: YYYY/MM/DD/HH
     formatted_time = format_time(parsed_time)
 
+    # grab rows in the database that have the corresponding time
+    videos = tiger_log.select_date(formatted_time)
+    
+    # make sure we have videos before continuing through this code
+    if len(videos) == 0:
+        print "Oops no videos."
+        view_available_dates() # give user option of viewing available dates       
+        exit_choice()  # give user option of exiting
+        continue
 
 
-    ################
-    # Select the appropriate directories from tiger_log, display videos for user, kill the
-    # videos when user is done.  
-    # 
-    # os.system("vlc path/to/video.video")
-    # os.system("vlc other/path/to/video.video")
-    # os.system("killall vlc")
-    ################
+    # start vlc windows for all videos
+    for item in videos:
+        abs_path = "".join(item)
+        get_and_sort(abs_path)
+        vlc_cmd = "vlc " + " --quiet " + abs_path + " > /dev/null 2> /dev/null" + " &"
+        os.system(vlc_cmd)
 
+    continue_looping = yes_or_no("\nWould you like to look at another set of videos?  Answering this question will exit the videos you currently have up.")
+    os.system("killall vlc")
 
-
-    continue_looping = yes_or_no("\nWould you like to look at another set of videos?  This will exit the videos you currently have up.")
 
 
 # Exit
 terminate_main()
+
+
+
+
+
+

@@ -83,6 +83,3 @@ def count_pos_frames(clip, min_size, num_hits, detector, viewer):
     return hits
 
 
-
-
-
