@@ -53,10 +53,8 @@ def ffmpeg(all_files, dest_directory):
     to_concat = "|".join(all_files)
     output_path = dest_directory + "/" + "aggregated_output.avi"
     cmd = 'ffmpeg -i "concat:' + to_concat + '" -y ' + output_path + ' -qscale 1' 
-    print cmd
     ret_val = os.system(cmd)
     return ret_val
-
 
 
 ################
@@ -80,7 +78,7 @@ for item in to_concatenate:
     ret_val = ffmpeg(temporal_order, currently_processing) # write a concatenated clip
     if ret_val == 0:   
         os.system("rm " + currently_processing + "/*.ts") # clean up this directory
-        tiger_log.update_concatenated_by_dir(currently_processing, 'Y') # mark this direcotry as concatenated
+        tiger_log.update_concatenated_by_saved_dir(currently_processing, 'Y') # mark this direcotry as concatenated
 
 
 
