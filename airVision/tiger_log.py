@@ -192,6 +192,31 @@ def select_dirs_with_pos_footage():
 
 
 
+# Select the rows that have saved concatenated footage
+# and the given date.
+# Return: all the directories that have concatenated footage saved.
+def select_dirs_with_concatenated_footage(date):
+    conn, cursor = open_data_base()
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT saved_at FROM tiger_log WHERE concatenated = 'Y' and date = ?", [date])
+    directories = cursor.fetchall()
+    close_data_base(conn)
+    return directories
+
+
+
+# Select the rows that have saved concatenated footage.
+# Return: all the dates that have concatenated footage saved.
+def select_dates_with_concatenated_footage():
+    conn, cursor = open_data_base()
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT date FROM tiger_log WHERE concatenated = 'Y'")
+    dates = cursor.fetchall()
+    close_data_base(conn)
+    return dates
+
+
+
 
 
 
