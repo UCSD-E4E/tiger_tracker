@@ -14,6 +14,22 @@ def close_data_base(connection):
     connection.close()
 
 
+# Remove any duplicated slashes in a path.
+# eg. /home//viki/Desktop to
+# /home/viki/Desktop
+def remove_duplicate_slashes(path):
+    if len(path) <= 1:
+        return path
+    new_str = []
+    current = path[0]
+    new_str.append(current)
+    for i in range(1, len(path)):
+        if current != path[i] or current != "/":
+            new_str.append(path[i])
+        current = path[i]
+    return "".join(new_str)
+
+
 # Create--if one doesn't already exist--a sqlite
 # data_base for the tiger_log.
 def create_table():
@@ -39,6 +55,7 @@ def insert_many_rows(date_camera_absolute):
 # a date, camera id, and abs_path
 def insert_row(date, camera_id, abs_path):
     conn, cursor = open_data_base() 
+    abs_path = remove_duplicate_slashes(abs_path)
     cursor.execute("INSERT OR IGNORE INTO tiger_log(date, camera_id, abs_path) values(?,?,?)", (date, camera_id, abs_path))
     close_data_base(conn)
 
@@ -71,6 +88,7 @@ def update_processed(date, camera_id, processed):
 def update_processed_by_dir(abs_dir, processed):
     if processed == "Y" or processed == "N":
         conn, cursor = open_data_base() 
+        abs_dir = remove_duplicate_slashes(abs_dir)
         cursor.execute("UPDATE tiger_log SET processed = ? WHERE abs_path = ?",(processed, abs_dir))  
         close_data_base(conn)
         return True
@@ -97,6 +115,7 @@ def update_pos_frames(date, camera_id, num_pos):
 # num_pos: # of positive frames found for this entry
 def update_pos_frames_by_dir(abs_dir, num_pos):
     conn, cursor = open_data_base() 
+    abs_dir = remove_duplicate_slashes(abs_dir)
     cursor.execute("UPDATE tiger_log SET pos_frames = ? WHERE abs_path = ?",(num_pos, abs_dir))  
     close_data_base(conn)
 
@@ -107,6 +126,8 @@ def update_pos_frames_by_dir(abs_dir, num_pos):
 # positive_dir: dir where positive footage is saved
 def update_savedat_by_dir(abs_dir, positive_dir):
     conn, cursor = open_data_base() 
+    abs_dir = remove_duplicate_slashes(abs_dir)
+    positive_dir = remove_duplicate_slashes(positive_dir)
     cursor.execute("UPDATE tiger_log SET saved_at = ? WHERE abs_path = ?",(positive_dir, abs_dir))    
     close_data_base(conn)
 
@@ -119,7 +140,25 @@ def update_savedat_by_dir(abs_dir, positive_dir):
 def update_concatenated_by_dir(abs_dir, processed):
     if processed == "Y" or processed == "N":
         conn, cursor = open_data_base() 
+        abs_dir = remove_duplicate_slashes(abs_dir)
         cursor.execute("UPDATE tiger_log SET concatenated = ? WHERE abs_path = ?",(processed, abs_dir))  
+        close_data_base(conn)
+        return True
+    else:
+        print "The processed field must be Y/N."
+        return False
+
+
+# Update the Y/N concatenated field for a 
+# particular camera at a given date (update 1 row)
+# Parameters: the saved_at dir
+# processed: Y = is processed, N = is NOT processed
+# Return: True on success, False on failure
+def update_concatenated_by_saved_dir(saved_dir, processed):
+    if processed == "Y" or processed == "N":
+        conn, cursor = open_data_base() 
+        saved_dir = remove_duplicate_slashes(saved_dir)
+        cursor.execute("UPDATE tiger_log SET concatenated = ? WHERE saved_at = ?",(processed, saved_dir))  
         close_data_base(conn)
         return True
     else:
@@ -214,6 +253,7 @@ def select_dates_with_concatenated_footage():
     dates = cursor.fetchall()
     close_data_base(conn)
     return dates
+
 
 
 
