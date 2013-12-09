@@ -146,11 +146,11 @@ def select_unprocessed():
 # Select the rows that are processed (the processed column
 # is marked 'Y'.) and not concatenated.
 # Return: a tuple of tuples. Each of the inner tuples 
-# represent a row in the table (contains the abs_paths)
+# represent a row in the table (contains the saved_at paths)
 def select_processed_not_concatenated():
     conn, cursor = open_data_base() 
     conn.row_factory = sqlite3.Row
-    cursor.execute("SELECT abs_path FROM tiger_log WHERE processed = 'Y' AND concatenated IS NULL OR concatenated = ''")
+    cursor.execute("SELECT saved_at FROM tiger_log WHERE processed = 'Y' AND concatenated IS NULL OR concatenated = ''")
     processed = cursor.fetchall()
     close_data_base(conn)
     return processed
@@ -178,6 +178,20 @@ def select_dates_with_pos_footage():
     dates = cursor.fetchall()
     close_data_base(conn)
     return dates
+
+
+# Select the rows that have saved positive footage.
+# Return: all the directories that have positive footage saved.
+def select_dates_with_pos_footage():
+    conn, cursor = open_data_base()
+    conn.row_factory = sqlite3.Row
+    cursor.execute("SELECT saved_at FROM tiger_log WHERE saved_at IS NOT null OR saved_at != ''")
+    directories = cursor.fetchall()
+    close_data_base(conn)
+    return directories
+
+
+
 
 
 
