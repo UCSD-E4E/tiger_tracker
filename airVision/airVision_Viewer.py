@@ -43,15 +43,16 @@ class AirVision_Viewer:
         if self.current_frame < self.total_frames:
             return True
         else:
-            self.cap.release() # nothing left to see in this current capture object
-            return False
+	    # nothing left to see in this current capture object
+            self.cap.release() 
+	    return False
 
     # next_frame_available()'s return must be checked before
     # calling this function.  
     # Return: the next frame in our AirVision Video.
     def next_frame(self):
         frame_capt, frame = self.cap.read()
-        self.current_frame = self.current_frame +1 
+        self.current_frame = self.current_frame + 1 
         cv2.waitKey(1)
         return frame
 
@@ -73,10 +74,12 @@ class AirVision_Viewer:
             os.makedirs(dir_name)   
 
         # create new file path and name
-        new_file = dir_name + "/" + self.return_only_name(clip) + "." + file_extension
+        new_file = (dir_name + "/" + self.return_only_name(clip) + "." +
+		file_extension)
     
         # call ffmpeg to change to encoding
-        os.system("ffmpeg -i " + clip + " -y -acodec copy -vcodec copy " + new_file)  
+        os.system("ffmpeg -i " + clip + " -y -acodec copy -vcodec copy " +
+		new_file)  
         return new_file
 
 
@@ -100,7 +103,4 @@ class AirVision_Viewer:
     def return_only_dir(self, full_path):
         path_and_name = os.path.split(full_path)
         return path_and_name[0]
-
-
-
 
