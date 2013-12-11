@@ -2,6 +2,9 @@ from dateutil import parser
 import tiger_log
 import os
 import re
+import time
+import datetime
+import pytz
 
 def terminate_main():
     print "\nExiting..."
@@ -9,17 +12,17 @@ def terminate_main():
 
 
 # Delete the directory with the passed in name. 
-    def delete_directory(self, name):
-        try:    
-            shutil.rmtree(name)
-        except Exception, e:
-            print e
+def delete_directory(name):
+    try:    
+        shutil.rmtree(name)
+    except Exception, e:
+        print e
 
 # Make a directory with the given name, if it doesn't
 # already exist.
 def make_directory(name):
-    if not os.path.exists(dir_name):
-        os.makedirs(dir_name)  
+    if not os.path.exists(name):
+        os.makedirs(name)  
 
 
 ##############################################
@@ -36,10 +39,6 @@ def alphanum_key(s):
 def sort_nicely(l):
     l.sort(key=alphanum_key)
 ##############################################
-
-
-
-
 
 # Prompt user for a yes or no response.
 # Paramters: the Prompt to print with a Y/N response.
@@ -101,6 +100,36 @@ def ask_for_time():
         accepted_time = yes_or_no("Is " + str(parsed_time) + " the time you'd like?")
     return parsed_time
 
+# Convert local time to UTC time
+def local_to_utc(time):
+    utc = pytz.timezone("UTC")
+    time = time.astimezone(utc)
+    return time
+
+# convert UTC time to local time
+def utc_to_local(time):
+    time = add_utc_timezone(time)
+    pacific = pytz.timezone("US/Pacific")
+    time = time.astimezone(pacific)
+    return time
+
+# add pacific timezone to time
+def add_pacific_timezone(time):
+    # get user's timezone
+    pacific = pytz.timezone("US/Pacific")
+    # set formatted date timezone
+    dt = pacific.localize(time)
+    return dt  
+             
+
+# add utc timezone to time
+def add_utc_timezone(time):
+    # get user's timezone
+    utc = pytz.timezone("UTC")
+    # set formatted date timezone
+    dt = utc.localize(time)
+    return dt  
+
 
 # Format the given input time.
 # Return the formatted time string.
@@ -111,12 +140,19 @@ def format_time(time):
 # Query tiger_log for all dates with saved positive 
 # footage.  Sort them, and return that sorted list.
 def sort_available_dates():
-    to_sort = []    
-    all_dates = tiger_log.select_dates_with_concatenated_footage()
+    to_sort = []
+    date_times = []    
+    #all_dates = tiger_log.select_dates_with_concatenated_footage()
+    all_dates = tiger_log.select_dates_with_pos_footage()    
     for item in all_dates:
-        to_sort.append("".join(item))
+        time_string = "".join(item)
+        to_sort.append(time_string)
     to_sort.sort()
-    return to_sort
+    for item in to_sort:
+        dt = parser.parse(item)
+        dt = utc_to_local(dt) # convert to local time
+        date_times.append(dt)
+    return date_times
     
 
 # Take a list of sorted dates, and print them out
@@ -128,11 +164,39 @@ def print_sorted_dates(to_print):
     else:   
         # print the dates, skipping duplicates 
         current = to_print[0]
-        print current
+        print format_time(current)
         for item in to_print:
             if item != current:
-                print item
+                print format_time(item)
                 current = item
+
+
+# Given a directory, sort all the video files
+# into temporal order.  Return the absolute paths
+# to those files.
+def get_and_sort(directory):
+    all_files = glob.glob(directory + "/" + "*.ts")
+    for i in range(0, len(all_files)):
+        all_files[i] = os.path.basename(all_files[i])
+    getPositives.sort_nicely(all_files)
+    for i in range(0, len(all_files)):
+        all_files[i] = directory + "/" + all_files[i]
+    return all_files
+
+
+# Given a  list of files, concatenate them
+# Put output file in specified
+# destination directory.
+# Return the path to the outputted video.
+def cat_files(all_files, dest_directory, output_name):
+    to_concat = " ".join(all_files)
+    output_path = dest_directory + "/" + output_name + ".mpeg"
+    cmd = 'cat ' + to_concat + " > " + output_path
+    ret_val = os.system(cmd)
+    return output_path
+
+
+
 
 
 # Give user option of viewing available dates.
@@ -156,6 +220,8 @@ def exit_choice():
 def get_and_sort(directory):
     all_files = os.listdir(directory)
     sort_nicely(all_files) # put the video clips in temporal order
+    for i in range(0, len(all_files)): # make these absolute paths
+        all_files[i] = directory + "/" + all_files[i]
     return all_files
 
   
@@ -180,12 +246,19 @@ while continue_looping:
     # get a valid time from the user   
     parsed_time = ask_for_time()
 
+    # make sure the time has a timezone
+    dt = add_pacific_timezone(parsed_time)
+    
+    # convert to utc
+    dt = local_to_utc(dt)
+
     # format the time so it matches tiger_log: YYYY/MM/DD/HH
-    formatted_time = format_time(parsed_time)
+    formatted_time = format_time(dt)
+
 
     # grab rows in the database that have the corresponding time
-    videos = tiger_log.select_dirs_with_concatenated_footage(formatted_time)
-    
+    #videos = tiger_log.select_dirs_with_concatenated_footage(formatted_time)
+    videos = tiger_log.select_dirs_with_positive_footage(formatted_time)
     # make sure we have videos before continuing through this code
     if len(videos) == 0:
         print "Oops no videos."
@@ -193,27 +266,33 @@ while continue_looping:
         exit_choice()  # give user option of exiting
         continue
 
-    print "\nFetching the " + str(len(videos)) + " available angles at this date."
+    print "\nFetching the " + str(len(videos)) + " available angle(s) at this date."
+
 
     # start vlc windows for all videos
+    tmp_dir = "results_tmp"
+    make_directory(tmp_dir)
     count = 1
     for item in videos:
         print "Fetching video from angle number " + str(count) + "..."
         abs_path = "".join(item)
-        video_file = os.listdir(abs_path)
-        final_path = abs_path + "/" + "".join(video_file)
+        temporal_order = get_and_sort(abs_path) # put clips in temporal order
+        catted = cat_files(temporal_order, tmp_dir, "seg" + str(count))
+        final_path = catted
+        #video_file = os.listdir(abs_path)
+        #final_path = abs_path + "/" + "".join(video_file)
         vlc_cmd = "vlc " + " --quiet " + final_path + " > /dev/null 2> /dev/null" + " &"
         os.system(vlc_cmd)
         count = count + 1
 
     continue_looping = yes_or_no("\nWould you like to look at another set of videos?  Answering this question will exit the videos you currently have up.")
     os.system("killall vlc")
+    delete_directory(tmp_dir)
 
 
 
 # Exit
 terminate_main()
-
 
 
 
