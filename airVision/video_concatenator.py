@@ -46,6 +46,26 @@ def get_and_sort(directory):
     return all_files
 
 
+
+# Given a  list of files, concatenate them
+# with ffmpeg.  Put output file in specified
+# destination directory.
+# Return the path to the outputted video.
+def cat_files(all_files, dest_directory):
+    to_concat = " ".join(all_files)
+    output_path = dest_directory + "/" + "catted_output.mpeg"
+    cmd = 'cat ' + to_concat + " > " + output_path
+    ret_val = os.system(cmd)
+    return output_path
+
+
+def ffmpeg_catted(catted_video, dest_directory):
+    output_path = dest_directory + "/" + "aggregated_output.mpeg"
+    cmd = "ffmpeg -i " + catted_video + " -y " + output_path + " -qscale 1"
+    ret_val = os.system(cmd)
+    return ret_val
+
+
 # Given a  list of files, concatenate them
 # with ffmpeg.  Put output file in specified
 # destination directory.
@@ -57,6 +77,11 @@ def ffmpeg(all_files, dest_directory):
     return ret_val
 
 
+temporal_order = get_and_sort("/usr/lib/airvision2/data/videos/01f5b81e-f893-31b8-b2e3-40b902ab44bc/2013/12/10/22")
+catted = cat_files(temporal_order, "/home/cameratrap/Desktop")
+ffmpeg_catted(catted, "/home/cameratrap/Desktop")
+
+"""
 ################
 # "Main":
 ################
@@ -80,7 +105,7 @@ for item in to_concatenate:
         os.system("rm " + currently_processing + "/*.ts") # clean up this directory
         tiger_log.update_concatenated_by_saved_dir(currently_processing, 'Y') # mark this direcotry as concatenated
 
-
+"""
 
 
 
