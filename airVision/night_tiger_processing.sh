@@ -53,7 +53,7 @@ export XDG_SESSION_PATH="/org/freedesktop/DisplayManager/Session0"
 
 cd /home/cameratrap/Desktop/tiger_tracker/airVision
 
-python main.py /usr/lib/airvision2/data/videos /media/zoodrive finals_deployment.txt
+python main.py /usr/lib/airvision2/data/videos /media/zoodrive Zoo_deployment.txt
 
 
 
