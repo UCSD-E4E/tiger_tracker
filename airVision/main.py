@@ -135,11 +135,14 @@ log_message("\nBeginning: " + str(datetime.datetime.now()), args.log_file, args.
 log_message("\nProcessing airVision data at: " + args.video_path, args.log_file, args.verbose)
 log_message("\nSaving positive footage at: " + args.saved_activity, args.log_file, args.verbose)
   
-# grab the dates of the videos (2013/10/22/13), camera_ids, and absolut paths
+# grab the dates of the videos (2013/10/22/13), camera_ids, and absolute paths
 dates, camera_ids, abs_paths = video_retriever.grab_video_dirs(args.video_path)
 
 if len(dates) != len(camera_ids):
     log_message("\nThe number of returned dates from the airVision directory, does not equal the number of camera_ids.  Exiting...", args.log_file, args.verbose)
+    terminate_main(args.log_file, args.verbose)
+elif len(dates) == 0:
+    log_message("\nNo videos discovered in given airVision directory.  Exiting...", args.log_file, args.verbose)
     terminate_main(args.log_file, args.verbose)
 else:
     date_cams_abspaths = zip(dates, camera_ids, abs_paths)
