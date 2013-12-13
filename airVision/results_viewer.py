@@ -5,6 +5,7 @@ import re
 import time
 import datetime
 import pytz
+import shutil
 
 def terminate_main():
     print "\nExiting..."
